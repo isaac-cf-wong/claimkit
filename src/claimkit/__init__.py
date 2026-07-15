@@ -11,6 +11,7 @@ from claimkit.core import (
     EvidenceKind,
     EvidenceRelation,
     NodeType,
+    ProvenanceGraph,
     ProvenancePredicate,
     ProvenanceRelation,
 )
@@ -26,6 +27,7 @@ __all__ = [
     "EvidenceKind",
     "EvidenceRelation",
     "NodeType",
+    "ProvenanceGraph",
     "ProvenancePredicate",
     "ProvenanceRelation",
     "__version__",
