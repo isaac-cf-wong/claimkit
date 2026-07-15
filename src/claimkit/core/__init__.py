@@ -9,6 +9,7 @@ from __future__ import annotations
 from claimkit.core.activity import Activity, ActivityKind
 from claimkit.core.claim import Claim, ClaimStatus
 from claimkit.core.evidence import Evidence, EvidenceKind, EvidenceRelation
+from claimkit.core.provenance import NodeType, ProvenancePredicate, ProvenanceRelation
 
 __all__ = [
     "Activity",
@@ -18,4 +19,7 @@ __all__ = [
     "Evidence",
     "EvidenceKind",
     "EvidenceRelation",
+    "NodeType",
+    "ProvenancePredicate",
+    "ProvenanceRelation",
 ]

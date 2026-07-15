@@ -10,6 +10,9 @@ from claimkit.core import (
     Evidence,
     EvidenceKind,
     EvidenceRelation,
+    NodeType,
+    ProvenancePredicate,
+    ProvenanceRelation,
 )
 from claimkit.hello_world import goodbye_world, hello_goodbye, hello_world, say_goodbye, say_hello
 from claimkit.version import __version__
@@ -22,6 +25,9 @@ __all__ = [
     "Evidence",
     "EvidenceKind",
     "EvidenceRelation",
+    "NodeType",
+    "ProvenancePredicate",
+    "ProvenanceRelation",
     "__version__",
     "goodbye_world",
     "hello_goodbye",
