@@ -1,9 +1,9 @@
 # Python Project Template
 
-[![Python CI](https://github.com/isaac-cf-wong/python-package-template/actions/workflows/ci.yml/badge.svg)](https://github.com/isaac-cf-wong/python-package-template/actions/workflows/ci.yml)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/isaac-cf-wong/python-package-template/main.svg)](https://results.pre-commit.ci/latest/github/isaac-cf-wong/python-package-template/main)
-[![Documentation Status](https://github.com/isaac-cf-wong/python-package-template/actions/workflows/documentation.yml/badge.svg)](https://isaac-cf-wong.github.io/python-package-template/)
-[![codecov](https://codecov.io/gh/isaac-cf-wong/python-package-template/graph/badge.svg?token=COF8341N60)](https://codecov.io/gh/isaac-cf-wong/python-package-template)
+[![Python CI](https://github.com/isaac-cf-wong/claimkit/actions/workflows/ci.yml/badge.svg)](https://github.com/isaac-cf-wong/claimkit/actions/workflows/ci.yml)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/isaac-cf-wong/claimkit/main.svg)](https://results.pre-commit.ci/latest/github/isaac-cf-wong/claimkit/main)
+[![Documentation Status](https://github.com/isaac-cf-wong/claimkit/actions/workflows/documentation.yml/badge.svg)](https://isaac-cf-wong.github.io/claimkit/)
+[![codecov](https://codecov.io/gh/isaac-cf-wong/claimkit/graph/badge.svg?token=COF8341N60)](https://codecov.io/gh/isaac-cf-wong/claimkit)
 [![PyPI Version](https://img.shields.io/pypi/v/package-name-placeholder)](https://pypi.org/project/package-name-placeholder/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/package-name-placeholder)](https://pypi.org/project/package-name-placeholder/)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](LICENSE)

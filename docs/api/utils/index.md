@@ -5,7 +5,7 @@ description: Utility functions.
 
 <!-- prettier-ignore-start -->
 
-::: python_package_template.utils
+::: claimkit.utils
     options:
         members:
             - hello
