@@ -27,7 +27,6 @@ from claimkit.core import (
     validate_all,
     validate_claim,
 )
-from claimkit.hello_world import goodbye_world, hello_goodbye, hello_world, say_goodbye, say_hello
 from claimkit.persistence import (
     SCHEMA_VERSION,
     dumps_graph,
@@ -63,20 +62,15 @@ __all__ = [
     "evidence_changed",
     "find_stale_claims",
     "find_stale_evidence",
-    "goodbye_world",
     "graph_from_document",
     "graph_to_document",
     "hash_file",
-    "hello_goodbye",
-    "hello_world",
     "load_graph",
     "loads_graph",
     "mark_stale_claims",
     "render_claim_report",
     "render_report",
     "save_graph",
-    "say_goodbye",
-    "say_hello",
     "validate_all",
     "validate_claim",
 ]

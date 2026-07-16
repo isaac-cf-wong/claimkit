@@ -83,10 +83,10 @@ def main(
 
 
 def register_commands() -> None:
-    """Register CLI commands."""
-    from claimkit.cli.hello import hello_command
+    """Register CLI commands.
 
-    app.command(name="hello")(hello_command)
+    No subcommands are wired up yet; commands are added here as the CLI grows.
+    """
 
 
 register_commands()
