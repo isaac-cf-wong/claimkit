@@ -11,13 +11,13 @@
 # The site_name is shown in the page header and the browser window title
 #
 # Read more: https://zensical.org/docs/setup/basics/#site_name
-site_name = "Python Package Template Documentation"
+site_name = "ClaimKit Documentation"
 
 # The site_description is included in the HTML head and should contain a
 # meaningful description of the site content for use by search engines.
 #
 # Read more: https://zensical.org/docs/setup/basics/#site_description
-site_description = "A GitHub template repository for a Python package."
+site_description = "A claim-level provenance framework for scientific research."
 
 # The site_author attribute. This is used in the HTML head element.
 #
@@ -46,9 +46,13 @@ Copyright &copy; 2026 Isaac C. F. Wong
 # Read more: https://zensical.org/docs/setup/navigation/
 nav = [
   { "Get Started" = "index.md" },
+  { "Command line" = "cli.md" },
   { "API" = [
     { "Overview" = "api/index.md" },
-    { "Hello World" = "api/hello_world.md" },
+    { "Core" = "api/core.md" },
+    { "Persistence" = "api/persistence.md" },
+    { "PROV-JSON" = "api/prov.md" },
+    { "Reporting" = "api/reporting.md" },
     { "Utility" = [
       { "Overview" = "api/utils/index.md" },
       { "Logging" = "api/utils/log.md" },

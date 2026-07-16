@@ -1,11 +1,11 @@
 ---
-title: Utility Functions
-description: Utility functions.
+title: PROV-JSON
+description: Export to and import from W3C PROV-JSON.
 ---
 
 <!-- prettier-ignore-start -->
 
-::: claimkit.utils
+::: claimkit.prov
     options:
         show_root_heading: false
         heading_level: 2

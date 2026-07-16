@@ -1,11 +1,11 @@
 ---
-title: Utility Functions
-description: Utility functions.
+title: Persistence
+description: Versioned JSON save/load for the provenance graph.
 ---
 
 <!-- prettier-ignore-start -->
 
-::: claimkit.utils
+::: claimkit.persistence
     options:
         show_root_heading: false
         heading_level: 2
