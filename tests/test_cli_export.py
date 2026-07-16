@@ -17,6 +17,7 @@ from claimkit.core import (
     ProvenanceRelation,
 )
 from claimkit.persistence import save_graph
+from claimkit.prov import CK_NAMESPACE
 
 runner = CliRunner()
 
@@ -59,7 +60,7 @@ def test_export_stdout_is_prov_json(tmp_path):
     result = runner.invoke(app, ["export", str(path)])
     assert result.exit_code == 0
     doc = json.loads(result.stdout)
-    assert doc["prefix"]["ck"].startswith("https://claimkit.dev")
+    assert doc["prefix"]["ck"] == CK_NAMESPACE
     assert doc["entity"]["ck:c1"]["prov:type"] == "ck:Claim"
     assert "ck:s1" in doc["wasInfluencedBy"]
 
