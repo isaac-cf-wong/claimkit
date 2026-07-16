@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "claimkit"
 authors = [{ name = "Isaac C. F. Wong" }]
-description = "A GitHub template repository for a Python package"
+description = "A claim-level provenance framework for scientific research"
 readme = "README.md"
 classifiers = [
   "Development Status :: 3 - Alpha",
