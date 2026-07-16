@@ -8,7 +8,7 @@
 [![Python Versions](https://img.shields.io/pypi/pyversions/claimkit)](https://pypi.org/project/claimkit/)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![DOI](https://zenodo.org/badge/924023559.svg)](https://doi.org/10.5281/zenodo.18017404)
+[![DOI](https://zenodo.org/badge/1301566989.svg)](https://doi.org/10.5281/zenodo.21396634)
 [![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
 
 **ClaimKit is a claim-level provenance framework for scientific research.**
