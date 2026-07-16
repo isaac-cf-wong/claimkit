@@ -84,11 +84,13 @@ def main(
 
 def register_commands() -> None:
     """Register CLI commands."""
+    from claimkit.cli.export import export_command
     from claimkit.cli.report import report_command
     from claimkit.cli.validate import validate_command
 
     app.command(name="validate")(validate_command)
     app.command(name="report")(report_command)
+    app.command(name="export")(export_command)
 
 
 register_commands()
