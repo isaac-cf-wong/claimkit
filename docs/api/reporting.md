@@ -1,11 +1,11 @@
 ---
-title: Utility Functions
-description: Utility functions.
+title: Reporting
+description: Human-readable Markdown provenance reports.
 ---
 
 <!-- prettier-ignore-start -->
 
-::: claimkit.utils
+::: claimkit.reporting
     options:
         show_root_heading: false
         heading_level: 2

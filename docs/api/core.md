@@ -1,11 +1,11 @@
 ---
-title: Utility Functions
-description: Utility functions.
+title: Core
+description: Claims, evidence, activities, and the provenance graph.
 ---
 
 <!-- prettier-ignore-start -->
 
-::: claimkit.utils
+::: claimkit.core
     options:
         show_root_heading: false
         heading_level: 2
