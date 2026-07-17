@@ -44,6 +44,10 @@ def add_evidence_command(
         list[str] | None,
         typer.Option("--meta", help="A KEY=VALUE metadata entry. Repeatable."),
     ] = None,
+    meta_json: Annotated[
+        list[str] | None,
+        typer.Option("--meta-json", help="A KEY=JSON metadata entry (structured value). Repeatable."),
+    ] = None,
 ) -> None:
     """Add a piece of evidence to a claim and link it, printing the evidence id.
 
@@ -60,10 +64,11 @@ def add_evidence_command(
         digest: An optional content digest of the artefact.
         description: An optional human-readable note.
         meta: Repeatable ``KEY=VALUE`` metadata entries.
+        meta_json: Repeatable ``KEY=JSON`` metadata entries (structured values).
     """
     from logging import getLogger
 
-    from claimkit.cli._options import parse_meta
+    from claimkit.cli._options import merged_metadata
     from claimkit.core import Evidence, NodeType, ProvenanceRelation
     from claimkit.persistence import load_graph, save_graph
 
@@ -89,7 +94,7 @@ def add_evidence_command(
         relation=relation,
         description=description,
         digest=digest,
-        metadata=parse_meta(meta),
+        metadata=merged_metadata(meta, meta_json),
     )
     if evidence_id is not None:
         evidence.id = evidence_id
