@@ -36,6 +36,10 @@ def add_evidence_command(
         str | None,
         typer.Option("--digest", help="Content digest of the artefact, for staleness detection."),
     ] = None,
+    auto_digest: Annotated[
+        bool,
+        typer.Option("--auto-digest", help="Compute the digest by hashing the reference as a file path."),
+    ] = False,
     description: Annotated[
         str,
         typer.Option("--description", help="Human-readable note about the evidence."),
@@ -43,6 +47,10 @@ def add_evidence_command(
     meta: Annotated[
         list[str] | None,
         typer.Option("--meta", help="A KEY=VALUE metadata entry. Repeatable."),
+    ] = None,
+    meta_json: Annotated[
+        list[str] | None,
+        typer.Option("--meta-json", help="A KEY=JSON metadata entry (structured value). Repeatable."),
     ] = None,
     created_at: Annotated[
         str | None,
@@ -62,14 +70,16 @@ def add_evidence_command(
         relation: How the evidence bears on the claim.
         evidence_id: An explicit id for the evidence, or None to generate one.
         digest: An optional content digest of the artefact.
+        auto_digest: Compute the digest by hashing the reference as a file path.
         description: An optional human-readable note.
         meta: Repeatable ``KEY=VALUE`` metadata entries.
+        meta_json: Repeatable ``KEY=JSON`` metadata entries (structured values).
         created_at: An explicit ISO-8601 creation timestamp, or None for now.
     """
     from logging import getLogger
 
-    from claimkit.cli._options import parse_datetime, parse_meta
-    from claimkit.core import Evidence, NodeType, ProvenanceRelation
+    from claimkit.cli._options import merged_metadata, parse_datetime
+    from claimkit.core import Evidence, NodeType, ProvenanceRelation, hash_file
     from claimkit.persistence import load_graph, save_graph
 
     logger = getLogger("claimkit")
@@ -77,6 +87,16 @@ def add_evidence_command(
     if not path.exists():
         typer.echo(f"No such file: {path}", err=True)
         raise typer.Exit(code=1)
+
+    if auto_digest:
+        if digest is not None:
+            typer.echo("Pass either --digest or --auto-digest, not both", err=True)
+            raise typer.Exit(code=1)
+        ref_path = Path(reference)
+        if not ref_path.exists():
+            typer.echo(f"--auto-digest needs the reference to be a file path; no such file: {reference}", err=True)
+            raise typer.Exit(code=1)
+        digest = hash_file(ref_path)
 
     graph = load_graph(path)
 
@@ -94,7 +114,7 @@ def add_evidence_command(
         relation=relation,
         description=description,
         digest=digest,
-        metadata=parse_meta(meta),
+        metadata=merged_metadata(meta, meta_json),
     )
     if evidence_id is not None:
         evidence.id = evidence_id
