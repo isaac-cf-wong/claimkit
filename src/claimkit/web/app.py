@@ -151,6 +151,13 @@ def create_app(graph_path: str | Path, base: str | Path | None = None):
     def api_graph():  # type: ignore[no-untyped-def]
         return jsonify(build_payload(graph_path, base))
 
+    @app.route("/vendor/vis-network.min.js")
+    def vendor_vis():  # type: ignore[no-untyped-def]
+        from importlib.resources import files
+
+        data = (files("claimkit.web") / "static" / "vis-network.min.js").read_bytes()
+        return Response(data, mimetype="application/javascript")
+
     @app.route("/")
     def index():  # type: ignore[no-untyped-def]
         return Response(_INDEX_HTML, mimetype="text/html")
@@ -158,15 +165,15 @@ def create_app(graph_path: str | Path, base: str | Path | None = None):
     return app
 
 
-#: Self-contained page; pulls vis-network from a CDN (needs internet the first
-#: load). Fetches /api/graph and renders a status-coloured provenance DAG with a
-#: click-through detail panel and a status summary bar.
+#: Self-contained page; loads the vendored vis-network (served at /vendor/, no
+#: network needed). Fetches /api/graph and renders a status-coloured provenance
+#: DAG with a click-through detail panel and a status summary bar.
 _INDEX_HTML = """<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <title>claimkit provenance</title>
-<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script src="/vendor/vis-network.min.js"></script>
 <style>
   body { margin:0; font-family: system-ui, sans-serif; display:flex; flex-direction:column; height:100vh; }
   #bar { padding:8px 12px; background:#1f2933; color:#fff; font-size:14px; }

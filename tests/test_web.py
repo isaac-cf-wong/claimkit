@@ -102,6 +102,26 @@ def test_flask_app_serves_index_and_api(tmp_path):
     assert body["summary"].get("valid") == 1
 
 
+def test_flask_app_serves_vendored_vis_network(tmp_path):
+    """The vendored vis-network library is served locally (no CDN).
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    """
+    pytest.importorskip("flask")
+    from claimkit.web import create_app
+
+    client = create_app(_graph_file(tmp_path)).test_client()
+    index = client.get("/")
+    assert b"/vendor/vis-network.min.js" in index.data
+    assert b"unpkg.com" not in index.data
+
+    vis = client.get("/vendor/vis-network.min.js")
+    assert vis.status_code == 200
+    assert b"vis-network" in vis.data
+
+
 def test_serve_missing_file(tmp_path):
     """Serve on a missing graph file exits non-zero.
 
