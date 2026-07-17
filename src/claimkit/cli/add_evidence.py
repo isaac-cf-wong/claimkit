@@ -44,6 +44,10 @@ def add_evidence_command(
         list[str] | None,
         typer.Option("--meta", help="A KEY=VALUE metadata entry. Repeatable."),
     ] = None,
+    created_at: Annotated[
+        str | None,
+        typer.Option("--created-at", help="ISO-8601 creation timestamp (defaults to now)."),
+    ] = None,
 ) -> None:
     """Add a piece of evidence to a claim and link it, printing the evidence id.
 
@@ -60,10 +64,11 @@ def add_evidence_command(
         digest: An optional content digest of the artefact.
         description: An optional human-readable note.
         meta: Repeatable ``KEY=VALUE`` metadata entries.
+        created_at: An explicit ISO-8601 creation timestamp, or None for now.
     """
     from logging import getLogger
 
-    from claimkit.cli._options import parse_meta
+    from claimkit.cli._options import parse_datetime, parse_meta
     from claimkit.core import Evidence, NodeType, ProvenanceRelation
     from claimkit.persistence import load_graph, save_graph
 
@@ -93,6 +98,9 @@ def add_evidence_command(
     )
     if evidence_id is not None:
         evidence.id = evidence_id
+    created = parse_datetime(created_at, "--created-at")
+    if created is not None:
+        evidence.created_at = created
     graph.add_evidence(evidence)
     graph.add_relation(
         ProvenanceRelation(

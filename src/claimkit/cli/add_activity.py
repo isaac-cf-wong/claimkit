@@ -52,6 +52,10 @@ def add_activity_command(
         list[str] | None,
         typer.Option("--meta", help="A KEY=VALUE metadata entry. Repeatable."),
     ] = None,
+    created_at: Annotated[
+        str | None,
+        typer.Option("--created-at", help="ISO-8601 creation timestamp (defaults to now)."),
+    ] = None,
 ) -> None:
     """Add an activity to a provenance graph and print its id.
 
@@ -67,9 +71,11 @@ def add_activity_command(
         description: An optional human-readable note.
         agent: The agent responsible for the activity, if any.
         meta: Repeatable ``KEY=VALUE`` metadata entries.
+        created_at: An explicit ISO-8601 creation timestamp, or None for now.
     """
     from logging import getLogger
 
+    from claimkit.cli._options import parse_datetime
     from claimkit.core import Activity
     from claimkit.persistence import load_graph, save_graph
 
@@ -94,6 +100,9 @@ def add_activity_command(
     )
     if activity_id is not None:
         activity.id = activity_id
+    created = parse_datetime(created_at, "--created-at")
+    if created is not None:
+        activity.created_at = created
     graph.add_activity(activity)
     save_graph(graph, path)
 
