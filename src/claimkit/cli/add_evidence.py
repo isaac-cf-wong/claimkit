@@ -21,13 +21,20 @@ _RELATION_TO_PREDICATE = {
 
 def add_evidence_command(
     path: Annotated[Path, typer.Argument(help="Path to a provenance graph JSON file.")],
-    claim_id: Annotated[str, typer.Argument(help="Id of the claim this evidence bears on.")],
-    kind: Annotated[EvidenceKind, typer.Option("--kind", help="The kind of artefact.")],
-    reference: Annotated[str, typer.Option("--reference", help="Pointer to the artefact (path/URL/DOI/commit).")],
+    claim_id: Annotated[
+        str | None,
+        typer.Argument(help="Id of a claim this evidence bears on (omit to register standalone)."),
+    ] = None,
+    kind: Annotated[EvidenceKind, typer.Option("--kind", help="The kind of artefact.")] = EvidenceKind.OTHER,
+    reference: Annotated[str, typer.Option("--reference", help="Pointer to the artefact (path/URL/DOI/commit).")] = "",
     relation: Annotated[
         EvidenceRelation,
-        typer.Option("--relation", help="How the evidence bears on the claim."),
+        typer.Option("--relation", help="How the evidence bears on the claim(s)."),
     ] = EvidenceRelation.SUPPORTS,
+    to_claim: Annotated[
+        list[str] | None,
+        typer.Option("--to-claim", help="Id of a further claim to link the same evidence to. Repeatable."),
+    ] = None,
     evidence_id: Annotated[
         str | None,
         typer.Option("--id", help="Explicit evidence id. A UUID is generated if omitted."),
@@ -57,17 +64,20 @@ def add_evidence_command(
         typer.Option("--created-at", help="ISO-8601 creation timestamp (defaults to now)."),
     ] = None,
 ) -> None:
-    """Add a piece of evidence to a claim and link it, printing the evidence id.
+    """Add a piece of evidence and link it to zero or more claims, printing its id.
 
-    A supporting/refuting/contextual relation is recorded both on the evidence
-    and as the matching provenance edge from the claim to the evidence.
+    The evidence can bear on the positional claim, on additional ``--to-claim``
+    claims (so one artefact can support several claims), or on none at all (a
+    standalone artefact to be linked later with ``add-relation``). Each linked
+    claim gets a supporting/refuting/contextual edge matching ``--relation``.
 
     Args:
         path: Path to a graph JSON file produced by claimkit.
-        claim_id: Id of the claim the evidence bears on.
+        claim_id: Id of a claim the evidence bears on, or None for standalone.
         kind: The kind of artefact referenced.
         reference: A pointer to the artefact.
-        relation: How the evidence bears on the claim.
+        relation: How the evidence bears on the claim(s).
+        to_claim: Ids of further claims to link the same evidence to.
         evidence_id: An explicit id for the evidence, or None to generate one.
         digest: An optional content digest of the artefact.
         auto_digest: Compute the digest by hashing the reference as a file path.
@@ -100,15 +110,18 @@ def add_evidence_command(
 
     graph = load_graph(path)
 
-    if claim_id not in graph.claims:
-        typer.echo(f"No such claim: {claim_id}", err=True)
-        raise typer.Exit(code=1)
+    # De-duplicated, order-preserving list of claims to link to (may be empty).
+    targets = list(dict.fromkeys([c for c in [claim_id, *(to_claim or [])] if c]))
+    for target in targets:
+        if target not in graph.claims:
+            typer.echo(f"No such claim: {target}", err=True)
+            raise typer.Exit(code=1)
     if evidence_id is not None and evidence_id in graph.evidence:
         typer.echo(f"Evidence with id {evidence_id} already exists", err=True)
         raise typer.Exit(code=1)
 
     evidence = Evidence(
-        claim_id=claim_id,
+        claim_id=targets[0] if targets else "",
         kind=kind,
         reference=reference,
         relation=relation,
@@ -122,16 +135,18 @@ def add_evidence_command(
     if created is not None:
         evidence.created_at = created
     graph.add_evidence(evidence)
-    graph.add_relation(
-        ProvenanceRelation(
-            subject_type=NodeType.CLAIM,
-            subject_id=claim_id,
-            predicate=_RELATION_TO_PREDICATE[relation],
-            object_type=NodeType.EVIDENCE,
-            object_id=evidence.id,
+    for target in targets:
+        graph.add_relation(
+            ProvenanceRelation(
+                subject_type=NodeType.CLAIM,
+                subject_id=target,
+                predicate=_RELATION_TO_PREDICATE[relation],
+                object_type=NodeType.EVIDENCE,
+                object_id=evidence.id,
+            )
         )
-    )
     save_graph(graph, path)
 
-    logger.info("Added evidence %s (%s) to claim %s", evidence.id, relation.value, claim_id)
+    linked = ", ".join(targets) if targets else "(standalone)"
+    logger.info("Added evidence %s (%s) -> %s", evidence.id, relation.value, linked)
     typer.echo(evidence.id)
