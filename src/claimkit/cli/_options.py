@@ -3,9 +3,31 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from typing import Any
 
 import typer
+
+
+def parse_datetime(value: str | None, flag: str) -> datetime | None:
+    """Parse an ISO-8601 timestamp option, or None if not given.
+
+    Args:
+        value: The raw timestamp string, or None.
+        flag: The option name, for error messages.
+
+    Returns:
+        The parsed :class:`datetime`, or None if ``value`` is None.
+
+    Raises:
+        typer.BadParameter: If ``value`` is not an ISO-8601 timestamp.
+    """
+    if value is None:
+        return None
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError as exc:
+        raise typer.BadParameter(f"{flag}: not an ISO-8601 timestamp: {value!r}") from exc
 
 
 def parse_meta(items: list[str] | None) -> dict[str, str]:

@@ -51,6 +51,10 @@ def add_activity_command(
         list[str] | None,
         typer.Option("--generated", help="Id/reference of an artefact the activity produced. Repeatable."),
     ] = None,
+    created_at: Annotated[
+        str | None,
+        typer.Option("--created-at", help="ISO-8601 creation timestamp (defaults to now)."),
+    ] = None,
 ) -> None:
     """Add an activity to a provenance graph and print its id.
 
@@ -71,11 +75,12 @@ def add_activity_command(
         ended_at: ISO-8601 timestamp when the activity ended, if known.
         used: Ids/references of artefacts the activity consumed.
         generated: Ids/references of artefacts the activity produced.
+        created_at: An explicit ISO-8601 creation timestamp, or None for now.
     """
     from datetime import datetime
     from logging import getLogger
 
-    from claimkit.cli._options import merged_metadata
+    from claimkit.cli._options import merged_metadata, parse_datetime
     from claimkit.core import Activity
     from claimkit.persistence import load_graph, save_graph
 
@@ -112,6 +117,9 @@ def add_activity_command(
     )
     if activity_id is not None:
         activity.id = activity_id
+    created = parse_datetime(created_at, "--created-at")
+    if created is not None:
+        activity.created_at = created
     graph.add_activity(activity)
     save_graph(graph, path)
 

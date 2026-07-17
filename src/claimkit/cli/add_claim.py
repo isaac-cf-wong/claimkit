@@ -34,6 +34,10 @@ def add_claim_command(
         list[str] | None,
         typer.Option("--meta-json", help="A KEY=JSON metadata entry (structured value). Repeatable."),
     ] = None,
+    created_at: Annotated[
+        str | None,
+        typer.Option("--created-at", help="ISO-8601 creation timestamp (defaults to now)."),
+    ] = None,
 ) -> None:
     """Add a claim to a provenance graph and print its id.
 
@@ -45,10 +49,11 @@ def add_claim_command(
         status: The initial status to set on the claim.
         meta: Repeatable ``KEY=VALUE`` metadata entries.
         meta_json: Repeatable ``KEY=JSON`` metadata entries (structured values).
+        created_at: An explicit ISO-8601 creation timestamp, or None for now.
     """
     from logging import getLogger
 
-    from claimkit.cli._options import merged_metadata
+    from claimkit.cli._options import merged_metadata, parse_datetime
     from claimkit.core import Claim
     from claimkit.persistence import load_graph, save_graph
 
@@ -71,6 +76,9 @@ def add_claim_command(
         if claim_id is None
         else Claim(statement=statement, id=claim_id, tags=claim_tags, status=status, metadata=claim_meta)
     )
+    created = parse_datetime(created_at, "--created-at")
+    if created is not None:
+        claim.created_at = created
     graph.add_claim(claim)
     save_graph(graph, path)
 
