@@ -30,6 +30,10 @@ def add_claim_command(
         list[str] | None,
         typer.Option("--meta", help="A KEY=VALUE metadata entry. Repeatable."),
     ] = None,
+    meta_json: Annotated[
+        list[str] | None,
+        typer.Option("--meta-json", help="A KEY=JSON metadata entry (structured value). Repeatable."),
+    ] = None,
 ) -> None:
     """Add a claim to a provenance graph and print its id.
 
@@ -40,10 +44,11 @@ def add_claim_command(
         tags: Tags to attach to the claim.
         status: The initial status to set on the claim.
         meta: Repeatable ``KEY=VALUE`` metadata entries.
+        meta_json: Repeatable ``KEY=JSON`` metadata entries (structured values).
     """
     from logging import getLogger
 
-    from claimkit.cli._options import parse_meta
+    from claimkit.cli._options import merged_metadata
     from claimkit.core import Claim
     from claimkit.persistence import load_graph, save_graph
 
@@ -60,7 +65,7 @@ def add_claim_command(
         raise typer.Exit(code=1)
 
     claim_tags = list(tags) if tags else []
-    claim_meta = parse_meta(meta)
+    claim_meta = merged_metadata(meta, meta_json)
     claim = (
         Claim(statement=statement, tags=claim_tags, status=status, metadata=claim_meta)
         if claim_id is None

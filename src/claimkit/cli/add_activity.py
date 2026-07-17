@@ -11,27 +11,6 @@ import typer
 from claimkit.core import ActivityKind
 
 
-def _parse_meta(items: list[str] | None) -> dict[str, str]:
-    """Parse repeatable ``KEY=VALUE`` options into a dict.
-
-    Args:
-        items: The raw ``KEY=VALUE`` strings, or None.
-
-    Returns:
-        A mapping of key to value.
-
-    Raises:
-        typer.BadParameter: If an item is not ``KEY=VALUE``.
-    """
-    meta: dict[str, str] = {}
-    for item in items or []:
-        key, sep, value = item.partition("=")
-        if not sep or not key:
-            raise typer.BadParameter(f"expected KEY=VALUE, got {item!r}")
-        meta[key] = value
-    return meta
-
-
 def add_activity_command(
     path: Annotated[Path, typer.Argument(help="Path to a provenance graph JSON file.")],
     label: Annotated[str, typer.Argument(help="A short human-readable name for the activity.")],
@@ -51,6 +30,10 @@ def add_activity_command(
     meta: Annotated[
         list[str] | None,
         typer.Option("--meta", help="A KEY=VALUE metadata entry. Repeatable."),
+    ] = None,
+    meta_json: Annotated[
+        list[str] | None,
+        typer.Option("--meta-json", help="A KEY=JSON metadata entry (structured value). Repeatable."),
     ] = None,
     started_at: Annotated[
         str | None,
@@ -83,6 +66,7 @@ def add_activity_command(
         description: An optional human-readable note.
         agent: The agent responsible for the activity, if any.
         meta: Repeatable ``KEY=VALUE`` metadata entries.
+        meta_json: Repeatable ``KEY=JSON`` metadata entries (structured values).
         started_at: ISO-8601 timestamp when the activity started, if known.
         ended_at: ISO-8601 timestamp when the activity ended, if known.
         used: Ids/references of artefacts the activity consumed.
@@ -91,6 +75,7 @@ def add_activity_command(
     from datetime import datetime
     from logging import getLogger
 
+    from claimkit.cli._options import merged_metadata
     from claimkit.core import Activity
     from claimkit.persistence import load_graph, save_graph
 
@@ -123,7 +108,7 @@ def add_activity_command(
         ended_at=_parse_dt(ended_at, "--ended-at"),
         used=list(used) if used else [],
         generated=list(generated) if generated else [],
-        metadata=_parse_meta(meta),
+        metadata=merged_metadata(meta, meta_json),
     )
     if activity_id is not None:
         activity.id = activity_id
