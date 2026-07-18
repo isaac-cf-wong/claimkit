@@ -20,6 +20,40 @@ from __future__ import annotations
 
 import html
 import re
+from pathlib import Path
+
+_INPUT_RE = re.compile(r"\\(?:input|include)\s*\{([^}]+)\}")
+_DOC_BODY_RE = re.compile(r"\\begin\{document\}(.*)\\end\{document\}", re.DOTALL)
+_MAX_INPUT_DEPTH = 15  # recursion guard for \input/\include expansion
+
+
+def expand_inputs(path: str | Path, _depth: int = 0) -> str:
+    r"""Read a LaTeX file, inlining ``\input``/``\include`` recursively.
+
+    Paths resolve relative to the including file; a missing ``.tex`` suffix is
+    added; unresolved includes are dropped. Recursion is capped to guard against
+    cycles.
+
+    Args:
+        path: The LaTeX file to read and expand.
+        _depth: Internal recursion guard.
+
+    Returns:
+        The file text with all resolvable includes inlined.
+    """
+    path = Path(path)
+    text = path.read_text()
+    if _depth >= _MAX_INPUT_DEPTH:
+        return text
+
+    def _sub(m: re.Match) -> str:
+        target = path.parent / m.group(1).strip()
+        if not target.suffix:
+            target = target.with_suffix(".tex")
+        return expand_inputs(target, _depth + 1) if target.exists() else ""
+
+    return _INPUT_RE.sub(_sub, text)
+
 
 _PROV_TOKEN = "\x00PROV{}\x00"  # noqa: S105 - a text placeholder, not a secret
 
@@ -166,6 +200,9 @@ def render_document(text: str, fmt: str) -> tuple[str, list[str]]:
         (in document order, duplicates kept).
     """
     if fmt == "latex":
+        body_match = _DOC_BODY_RE.search(text)
+        if body_match:  # skip the preamble when given a full document
+            text = body_match.group(1)
         stripped, refs = _extract_latex_prov(text)
         body = _latex_prose_to_html(stripped)
         inner_render = _latex_prose_to_html

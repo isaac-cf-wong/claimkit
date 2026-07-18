@@ -140,11 +140,12 @@ def build_doc_payload(doc_path: str | Path, graph_payload: dict[str, Any]) -> di
         ``known`` flag (``known=False`` = the draft cites an id absent from the
         graph — a dangling provenance reference).
     """
-    from claimkit.web.document import detect_format, render_document
+    from claimkit.web.document import detect_format, expand_inputs, render_document
 
     doc_path = Path(doc_path)
     fmt = detect_format(str(doc_path))
-    body, ref_ids = render_document(doc_path.read_text(), fmt)
+    text = expand_inputs(doc_path) if fmt == "latex" else doc_path.read_text()
+    body, ref_ids = render_document(text, fmt)
     by_id = {n["id"]: n for n in graph_payload["nodes"]}
     refs = {
         rid: {
@@ -242,9 +243,9 @@ _INDEX_HTML = """<!doctype html>
   .view.hidden { display:none; }
   #net { flex:1; min-height:0; background:#fbfcfe; }
   #docbar { padding:8px 16px; border-bottom:1px solid #dde3ec; background:#eef2f7; font-size:13px; }
-  #docbody { flex:1; overflow:auto; padding:24px 40px; }
-  #docbody article { max-width:820px; margin:0 auto; font-size:16px; line-height:1.65; color:#1c2735; }
-  #docbody h2 { font-size:22px; margin:1.2em 0 .4em; } #docbody h3 { font-size:18px; margin:1em 0 .3em; }
+  #docbody { flex:1; overflow:auto; padding:28px 48px; }
+  #docbody article { max-width:880px; margin:0 auto; font-size:19px; line-height:1.7; color:#1c2735; }
+  #docbody h2 { font-size:27px; margin:1.2em 0 .4em; } #docbody h3 { font-size:21px; margin:1em 0 .3em; }
   .prov { border-bottom:2.5px solid #8895a7; cursor:pointer; padding-bottom:1px; }
   .prov:hover { background:#eef3ff; }
   .prov[data-status=valid]{ border-color:#1f9d55; } .prov[data-status=invalid]{ border-color:#e0245e; }
