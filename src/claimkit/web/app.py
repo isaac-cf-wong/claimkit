@@ -229,21 +229,21 @@ _INDEX_HTML = """<!doctype html>
   * { box-sizing:border-box; }
   body { margin:0; font-family: system-ui, -apple-system, sans-serif; display:flex; flex-direction:column;
          height:100vh; color:#1a2330; }
-  #bar { padding:10px 16px; background:var(--bg); color:#fff; display:flex; align-items:center; gap:14px;
+  #bar { padding:12px 18px; background:var(--bg); color:#fff; display:flex; align-items:center; gap:16px;
          flex-wrap:wrap; }
-  #bar b { font-size:15px; letter-spacing:.2px; }
-  .tabs { display:flex; gap:4px; margin-left:8px; }
-  .tab { padding:4px 12px; border-radius:7px; font-size:13px; cursor:pointer; color:#c8d3df; background:#1c2836; }
+  #bar b { font-size:18px; letter-spacing:.2px; }
+  .tabs { display:flex; gap:5px; margin-left:8px; }
+  .tab { padding:6px 15px; border-radius:8px; font-size:15px; cursor:pointer; color:#c8d3df; background:#1c2836; }
   .tab.active { background:#2f6df6; color:#fff; font-weight:600; }
   .tab.hidden { display:none; }
-  .chip { display:inline-flex; align-items:center; padding:3px 10px; border-radius:12px; font-size:12px;
+  .chip { display:inline-flex; align-items:center; padding:4px 12px; border-radius:12px; font-size:14px;
           font-weight:600; color:#fff; }
-  .counts { color:#9fb0c3; font-size:13px; }
-  .legend { margin-left:auto; display:flex; gap:14px; font-size:12px; color:#c8d3df; }
-  .legend span { display:inline-flex; align-items:center; gap:5px; }
-  .sw { width:12px; height:12px; border-radius:3px; display:inline-block; }
-  #cols { display:flex; padding:6px 0; background:#eef2f7; border-bottom:1px solid #dde3ec;
-          font-size:12px; font-weight:700; color:#5b6b7f; text-transform:uppercase; letter-spacing:.5px; }
+  .counts { color:#9fb0c3; font-size:15px; }
+  .legend { margin-left:auto; display:flex; gap:16px; font-size:14px; color:#c8d3df; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .sw { width:14px; height:14px; border-radius:3px; display:inline-block; }
+  #cols { display:flex; padding:8px 0; background:#eef2f7; border-bottom:1px solid #dde3ec;
+          font-size:14px; font-weight:700; color:#5b6b7f; text-transform:uppercase; letter-spacing:.5px; }
   #cols div { flex:1; text-align:center; }
   #main { flex:1; display:flex; min-height:0; }
   .view { flex:1; display:flex; flex-direction:column; min-width:0; min-height:0; }
@@ -260,7 +260,7 @@ _INDEX_HTML = """<!doctype html>
   .prov[data-status=unresolved]{ border-color:#8895a7; }
   .prov[data-status=evidence]{ border-color:#2f6df6; } .prov[data-status=activity]{ border-color:#8e44c9; }
   .prov[data-status=unknown]{ border-bottom-style:dashed; border-color:#e0245e; background:#fdecef; }
-  #panel { width:360px; overflow:auto; border-left:1px solid #dde3ec; padding:16px; font-size:13px;
+  #panel { width:380px; overflow:auto; border-left:1px solid #dde3ec; padding:18px; font-size:14px;
            background:var(--panel); }
   #panel h3 { margin:0 0 4px; font-size:15px; word-break:break-word; }
   #panel .badge { display:inline-block; padding:2px 9px; border-radius:10px; color:#fff; font-size:11px;
@@ -355,8 +355,8 @@ async function loadGraph() {
     const fg = DARKTEXT.has(n.status) ? "#1a2330" : "#ffffff";
     return { id:n.id, label:n.label, level:n.level, shape:"box",
       color:{ background:bg, border:bg, highlight:{background:bg, border:"#111"} },
-      font:{ color:fg, size:15, face:"system-ui", bold: n.type==="claim" },
-      margin:10, widthConstraint:{ maximum:210 }, shapeProperties:{ borderRadius:7 }, borderWidth:2 };
+      font:{ color:fg, size:18, face:"system-ui", bold: n.type==="claim" },
+      margin:12, widthConstraint:{ maximum:230 }, shapeProperties:{ borderRadius:7 }, borderWidth:2 };
   });
   const edges = data.edges.map(e => ({ from:e.source, to:e.target, arrows:{to:{scaleFactor:.6}},
     smooth:{ type:"cubicBezier", forceDirection:"horizontal", roundness:.55 },
