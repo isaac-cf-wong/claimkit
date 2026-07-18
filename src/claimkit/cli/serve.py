@@ -21,6 +21,10 @@ def serve_command(
         list[Path] | None,
         typer.Option("--doc", help="A LaTeX/Markdown draft to show with inline provenance. Repeatable."),
     ] = None,
+    bib: Annotated[
+        Path | None,
+        typer.Option("--bib", help="A BibTeX file to label literature evidence (citation keys -> titles)."),
+    ] = None,
 ) -> None:
     r"""Serve an interactive provenance web UI for a graph.
 
@@ -42,6 +46,7 @@ def serve_command(
         port: Port to listen on.
         base: Directory relative evidence references resolve against.
         doc: Draft files (LaTeX/Markdown) to expose in the Document tab.
+        bib: A BibTeX file to label literature evidence with citation titles.
     """
     from logging import getLogger
 
@@ -61,7 +66,15 @@ def serve_command(
         if not d.exists():
             typer.echo(f"No such document: {d}", err=True)
             raise typer.Exit(code=1)
-    app = create_app(path, base, docs=list(doc or []))
+    bib_entries = None
+    if bib is not None:
+        if not bib.exists():
+            typer.echo(f"No such bib file: {bib}", err=True)
+            raise typer.Exit(code=1)
+        from claimkit.bib import parse_bibtex
+
+        bib_entries = parse_bibtex(bib)
+    app = create_app(path, base, docs=list(doc or []), bib=bib_entries)
     logger.info("Serving provenance for %s at http://%s:%d", path, host, port)
     typer.echo(f"claimkit provenance UI -> http://{host}:{port}  (Ctrl-C to stop)")
     app.run(host=host, port=port)

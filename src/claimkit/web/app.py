@@ -52,38 +52,53 @@ def _claim_node(claim: Claim, status: ClaimStatus, stale: bool) -> dict[str, Any
     }
 
 
-def build_payload(graph_path: str | Path, base: str | Path | None = None) -> dict[str, Any]:
+def build_payload(
+    graph_path: str | Path, base: str | Path | None = None, bib: dict[str, dict[str, str]] | None = None
+) -> dict[str, Any]:
     """Load the graph and compute a front-end payload with live status.
 
     Args:
         graph_path: Path to the claimkit graph JSON file.
         base: Directory that relative evidence references resolve against, for
             staleness (defaults to the graph file's parent).
+        bib: Optional ``{key: {title,author,year}}`` to label literature evidence.
 
     Returns:
         A dict with ``nodes``, ``edges``, and a ``summary`` of status counts —
         recomputed from disk on every call so the view reflects current state.
+        Claim nodes also carry a ``support`` category (own/literature/both/
+        unsupported).
     """
+    from claimkit import EvidenceKind, coverage
+    from claimkit.bib import format_citation
+
     graph_path = Path(graph_path)
     base = Path(base) if base is not None else graph_path.parent
+    bib = bib or {}
     graph: ProvenanceGraph = load_graph(graph_path)
 
     verdicts = validate_all(graph)
     stale_ids = {c.id for c in find_stale_claims(graph, _resolver(base))}
+    cov = coverage(graph)
 
     nodes: list[dict[str, Any]] = []
     for cid, claim in graph.claims.items():
-        nodes.append(_claim_node(claim, verdicts[cid].status, cid in stale_ids))
+        node = _claim_node(claim, verdicts[cid].status, cid in stale_ids)
+        node["support"] = cov[cid].category
+        nodes.append(node)
     for eid, ev in graph.evidence.items():
+        is_lit = ev.kind is EvidenceKind.LITERATURE
+        citation = format_citation(ev.reference, bib.get(ev.reference)) if is_lit else None
         nodes.append(
             {
                 "id": eid,
                 "type": _EVIDENCE,
                 "level": 1,
-                "label": eid,
-                "status": "evidence",
+                "label": citation if is_lit else eid,
+                "status": "literature" if is_lit else "evidence",
                 "kind": ev.kind.value,
                 "reference": ev.reference,
+                "citation": citation,
                 "digest": ev.digest,
                 "metadata": ev.metadata,
             }
@@ -158,19 +173,26 @@ def build_doc_payload(doc_path: str | Path, graph_payload: dict[str, Any]) -> di
             "known": rid in by_id,
             "status": by_id[rid]["status"] if rid in by_id else "unknown",
             "type": by_id[rid]["type"] if rid in by_id else None,
+            "support": by_id[rid].get("support", "unknown") if rid in by_id else "unknown",
         }
         for rid in ref_ids
     }
     return {"name": doc_path.name, "format": fmt, "html": body, "refs": refs}
 
 
-def create_app(graph_path: str | Path, base: str | Path | None = None, docs: list[str | Path] | None = None):
+def create_app(
+    graph_path: str | Path,
+    base: str | Path | None = None,
+    docs: list[str | Path] | None = None,
+    bib: dict[str, dict[str, str]] | None = None,
+):
     """Build the Flask app serving the provenance UI.
 
     Args:
         graph_path: Path to the claimkit graph JSON file.
         base: Directory relative evidence references resolve against.
         docs: Optional draft files (LaTeX/Markdown) to expose in the Document tab.
+        bib: Optional parsed BibTeX for labelling literature evidence.
 
     Returns:
         A configured :class:`flask.Flask` application.
@@ -188,7 +210,7 @@ def create_app(graph_path: str | Path, base: str | Path | None = None, docs: lis
 
     @app.route("/api/graph")
     def api_graph():  # type: ignore[no-untyped-def]
-        return jsonify(build_payload(graph_path, base))
+        return jsonify(build_payload(graph_path, base, bib))
 
     @app.route("/api/docs")
     def api_docs():  # type: ignore[no-untyped-def]
@@ -198,7 +220,7 @@ def create_app(graph_path: str | Path, base: str | Path | None = None, docs: lis
     def api_doc(i):  # type: ignore[no-untyped-def]
         if i < 0 or i >= len(doc_list):
             abort(404)
-        return jsonify(build_doc_payload(doc_list[i], build_payload(graph_path, base)))
+        return jsonify(build_doc_payload(doc_list[i], build_payload(graph_path, base, bib)))
 
     asset_root = doc_list[0].resolve().parent if doc_list else None
     _asset_exts = {".png", ".svg", ".jpg", ".jpeg", ".gif", ".webp", ".pdf"}
@@ -281,11 +303,12 @@ _INDEX_HTML = """<!doctype html>
   #docbody .fignote { color:#8494a8; font-style:italic; padding:12px; border:1px dashed #c3ccd8; border-radius:4px; }
   .prov { border-bottom:2.5px solid #8895a7; cursor:pointer; padding-bottom:1px; }
   .prov:hover { background:#eef3ff; }
-  .prov[data-status=valid]{ border-color:#1f9d55; } .prov[data-status=invalid]{ border-color:#e0245e; }
-  .prov[data-status=stale]{ border-color:#f5a623; background:#fff7e6; }
-  .prov[data-status=unresolved]{ border-color:#8895a7; }
-  .prov[data-status=evidence]{ border-color:#2f6df6; } .prov[data-status=activity]{ border-color:#8e44c9; }
-  .prov[data-status=unknown]{ border-bottom-style:dashed; border-color:#e0245e; background:#fdecef; }
+  .prov[data-support=own]{ border-color:#1f9d55; }
+  .prov[data-support=literature]{ border-color:#2f6df6; }
+  .prov[data-support=both]{ border-color:#00897b; }
+  .prov[data-support=other]{ border-color:#8895a7; }
+  .prov[data-support=unsupported]{ border-bottom-style:dashed; border-color:#e0245e; background:#fdecef; }
+  .prov[data-support=unknown]{ border-bottom-style:dashed; border-color:#8895a7; }
   #panel { width:380px; overflow:auto; border-left:1px solid #dde3ec; padding:18px; font-size:14px;
            background:var(--panel); }
   #panel h3 { margin:0 0 4px; font-size:15px; word-break:break-word; }
@@ -314,6 +337,7 @@ _INDEX_HTML = """<!doctype html>
     <span><i class="sw" style="background:#f5a623"></i>stale</span>
     <span><i class="sw" style="background:#8895a7"></i>unresolved</span>
     <span><i class="sw" style="background:#2f6df6"></i>evidence</span>
+    <span><i class="sw" style="background:#d98324"></i>literature</span>
     <span><i class="sw" style="background:#8e44c9"></i>run</span>
   </span>
 </div>
@@ -324,14 +348,16 @@ _INDEX_HTML = """<!doctype html>
   </div>
   <div class="view hidden" id="view-doc">
     <div id="docbar">Document: <select id="docsel" onchange="loadDoc(this.value)"></select>
-      &nbsp;<span class="hint">colored underline = provenance status; click a mark to inspect.</span></div>
+      &nbsp;<span class="hint">underline = support: <b style="color:#1f9d55">own</b> ·
+      <b style="color:#2f6df6">literature</b> · <b style="color:#00897b">both</b> ·
+      <b style="color:#e0245e">unsupported</b>. Click a mark to inspect.</span></div>
     <div id="docbody"><article id="docart"></article></div>
   </div>
   <div id="panel"><span class="hint">Click a node or a provenance mark to inspect it.</span></div>
 </div>
 <script>
 const COLOR = { valid:"#1f9d55", invalid:"#e0245e", stale:"#f5a623", needs_review:"#ef6c00",
-  unresolved:"#8895a7", evidence:"#2f6df6", activity:"#8e44c9", unknown:"#e0245e" };
+  unresolved:"#8895a7", evidence:"#2f6df6", literature:"#d98324", activity:"#8e44c9", unknown:"#e0245e" };
 const DARKTEXT = new Set(["stale","needs_review"]);
 let byId = {};
 function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
@@ -351,6 +377,8 @@ function showNode(id){
   const bg = COLOR[n.status] || "#8895a7";
   let h = `<h3>${esc(n.id)}</h3><span class="badge" style="background:${bg}">${esc(n.type)} · ${esc(n.status)}</span>`;
   if (n.statement) h += `<div class="stmt">${esc(n.statement)}</div>`;
+  if (n.support) h += `<div class="kv"><b>support:</b> ${esc(n.support)}</div>`;
+  if (n.citation) h += `<div class="kv"><b>citation:</b> ${esc(n.citation)}</div>`;
   if (n.kind) h += `<div class="kv"><b>kind:</b> ${esc(n.kind)}</div>`;
   if (n.reference) h += `<div class="kv"><b>reference:</b> ${esc(n.reference)}</div>`;
   if (n.digest) h += `<div class="kv"><b>digest:</b> <code>${esc(n.digest)}</code></div>`;
@@ -365,9 +393,9 @@ async function loadDoc(i){
   const art = document.getElementById("docart");
   art.innerHTML = d.html;
   art.querySelectorAll(".prov").forEach(sp => {
-    const id = sp.dataset.id, ref = d.refs[id] || {status:"unknown"};
-    sp.dataset.status = ref.status;
-    sp.title = ref.known ? `${id} — ${ref.status}` : `${id} — not in graph`;
+    const id = sp.dataset.id, ref = d.refs[id] || {support:"unknown"};
+    sp.dataset.support = ref.known ? (ref.support || "other") : "unknown";
+    sp.title = ref.known ? `${id} — support: ${ref.support}, status: ${ref.status}` : `${id} — not in graph`;
     sp.onclick = () => showNode(id);
   });
   if (window.MathJax && MathJax.typesetPromise) { try { await MathJax.typesetPromise([art]); } catch(e){} }
