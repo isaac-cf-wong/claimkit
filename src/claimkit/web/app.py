@@ -238,9 +238,9 @@ _INDEX_HTML = """<!doctype html>
           font-size:12px; font-weight:700; color:#5b6b7f; text-transform:uppercase; letter-spacing:.5px; }
   #cols div { flex:1; text-align:center; }
   #main { flex:1; display:flex; min-height:0; }
-  .view { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .view { flex:1; display:flex; flex-direction:column; min-width:0; min-height:0; }
   .view.hidden { display:none; }
-  #net { flex:1; background:#fbfcfe; }
+  #net { flex:1; min-height:0; background:#fbfcfe; }
   #docbar { padding:8px 16px; border-bottom:1px solid #dde3ec; background:#eef2f7; font-size:13px; }
   #docbody { flex:1; overflow:auto; padding:24px 40px; }
   #docbody article { max-width:820px; margin:0 auto; font-size:16px; line-height:1.65; color:#1c2735; }
