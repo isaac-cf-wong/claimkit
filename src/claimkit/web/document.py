@@ -123,11 +123,43 @@ def _extract_markdown_prov(text: str) -> tuple[str, list[tuple[str, str]]]:
 
 _LATEX_UNWRAP = re.compile(r"\\(?:emph|textbf|textit|texttt|gls|glspl|text|mbox|ensuremath)\s*\{")
 _LATEX_DROP_ARG = re.compile(r"\\(?:label|cite[a-z]*|ref|eqref|footnote|index)\s*\{[^{}]*\}")
+#: Title-block commands whose (balanced-brace) argument is dropped entirely.
+_DROP_CMDS = ("author", "email", "affiliation", "altaffiliation", "thanks", "homepage", "orcidlink", "date")
+_DROP_CMDS_RE = re.compile(r"\\(?:" + "|".join(_DROP_CMDS) + r")\s*(?:\[[^\]]*\])?\s*(?=\{)")
+_MATH_DISPLAY_RE = re.compile(r"\$\$.*?\$\$|\\\[.*?\\\]", re.DOTALL)
+_MATH_INLINE_RE = re.compile(r"\$[^$\n]+?\$|\\\(.+?\\\)", re.DOTALL)
+
+
+def _drop_cmds(text: str) -> str:
+    r"""Drop title-block commands (``\author{...}`` etc.) with their arguments."""
+    out = []
+    i = 0
+    while True:
+        m = _DROP_CMDS_RE.search(text, i)
+        if not m:
+            out.append(text[i:])
+            break
+        out.append(text[i : m.start()])
+        _, end = _match_braces(text, m.end())
+        i = end
+    return "".join(out)
 
 
 def _latex_prose_to_html(text: str) -> str:
-    """Very small LaTeX->HTML prose pass (headings, unwrapping, paragraphs)."""
+    """Very small LaTeX->HTML prose pass; math is preserved for MathJax."""
     text = re.sub(r"(?<!\\)%.*", "", text)  # comments
+    # Protect math (display before inline) so macro-stripping leaves it intact;
+    # MathJax typesets it client-side. Escaped for HTML at restore time.
+    math: list[str] = []
+
+    def _keep_math(mo: re.Match) -> str:
+        math.append(mo.group(0))
+        return f"\x00M{len(math) - 1}\x00"
+
+    text = _MATH_DISPLAY_RE.sub(_keep_math, text)
+    text = _MATH_INLINE_RE.sub(_keep_math, text)
+
+    text = _drop_cmds(text)
     text = _LATEX_DROP_ARG.sub("", text)
     # unwrap \emph{x} etc. -> x (repeat for simple nesting)
     for _ in range(4):
@@ -144,7 +176,7 @@ def _latex_prose_to_html(text: str) -> str:
             i = end
         text = "".join(new)
     headings: list[tuple[str, str]] = []
-    for cmd, tag in (("section", "h2"), ("subsection", "h3"), ("subsubsection", "h4")):
+    for cmd, tag in (("title", "h1"), ("section", "h2"), ("subsection", "h3"), ("subsubsection", "h4")):
         while True:
             m = re.search(r"\\" + cmd + r"\*?\s*\{", text)
             if not m:
@@ -166,7 +198,10 @@ def _latex_prose_to_html(text: str) -> str:
         for idx, (tag, inner) in enumerate(headings):
             body = body.replace(f"\x00H{idx}\x00", f"</p><{tag}>{html.escape(inner)}</{tag}><p>")
         rendered.append(f"<p>{body}</p>")
-    return "\n".join(rendered)
+    out_html = "\n".join(rendered)
+    for idx, expr in enumerate(math):  # restore math verbatim (HTML-escaped, delimiters kept)
+        out_html = out_html.replace(f"\x00M{idx}\x00", html.escape(expr))
+    return out_html
 
 
 def _markdown_prose_to_html(text: str) -> str:

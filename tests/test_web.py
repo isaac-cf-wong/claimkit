@@ -121,6 +121,9 @@ def test_flask_app_serves_vendored_vis_network(tmp_path):
     assert vis.status_code == 200
     assert b"vis-network" in vis.data
 
+    assert client.get("/vendor/mathjax.js").status_code == 200
+    assert client.get("/vendor/nope.js").status_code == 404
+
 
 def test_serve_missing_file(tmp_path):
     """Serve on a missing graph file exits non-zero.

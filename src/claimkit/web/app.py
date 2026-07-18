@@ -194,11 +194,15 @@ def create_app(graph_path: str | Path, base: str | Path | None = None, docs: lis
             abort(404)
         return jsonify(build_doc_payload(doc_list[i], build_payload(graph_path, base)))
 
-    @app.route("/vendor/vis-network.min.js")
-    def vendor_vis():  # type: ignore[no-untyped-def]
+    @app.route("/vendor/<path:name>")
+    def vendor(name):  # type: ignore[no-untyped-def]
         from importlib.resources import files
 
-        data = (files("claimkit.web") / "static" / "vis-network.min.js").read_bytes()
+        allowed = {"vis-network.min.js": "vis-network.min.js", "mathjax.js": "mathjax-tex-svg.js"}
+        fname = allowed.get(name)
+        if fname is None:
+            abort(404)
+        data = (files("claimkit.web") / "static" / fname).read_bytes()
         return Response(data, mimetype="application/javascript")
 
     @app.route("/")
@@ -217,6 +221,9 @@ _INDEX_HTML = """<!doctype html>
 <meta charset="utf-8"/>
 <title>claimkit provenance</title>
 <script src="/vendor/vis-network.min.js"></script>
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$','$$'],['\\\\[','\\\\]']]},
+  svg:{fontCache:'local'},startup:{typeset:false},options:{skipHtmlTags:['script','style']}};</script>
+<script src="/vendor/mathjax.js" id="MathJax-script"></script>
 <style>
   :root { --bg:#0f1720; --panel:#f7f9fc; }
   * { box-sizing:border-box; }
@@ -337,6 +344,7 @@ async function loadDoc(i){
     sp.title = ref.known ? `${id} — ${ref.status}` : `${id} — not in graph`;
     sp.onclick = () => showNode(id);
   });
+  if (window.MathJax && MathJax.typesetPromise) { try { await MathJax.typesetPromise([art]); } catch(e){} }
 }
 
 async function loadGraph() {
