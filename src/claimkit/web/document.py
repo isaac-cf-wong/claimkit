@@ -126,6 +126,13 @@ _LATEX_DROP_ARG = re.compile(r"\\(?:label|cite[a-z]*|ref|eqref|footnote|index)\s
 #: Title-block commands whose (balanced-brace) argument is dropped entirely.
 _DROP_CMDS = ("author", "email", "affiliation", "altaffiliation", "thanks", "homepage", "orcidlink", "date")
 _DROP_CMDS_RE = re.compile(r"\\(?:" + "|".join(_DROP_CMDS) + r")\s*(?:\[[^\]]*\])?\s*(?=\{)")
+# AMS/TeX math environments MathJax renders on its own — protect them verbatim
+# from the prose macro-stripping. Backref \1 pairs the matching \end{...}.
+_MATH_ENV_RE = re.compile(
+    r"\\begin\{(equation\*?|align\*?|alignat\*?|gather\*?|multline\*?|eqnarray\*?|displaymath|math|split|cases|aligned)\}"  # typos:disable-line
+    r".*?\\end\{\1\}",
+    re.DOTALL,
+)
 _MATH_DISPLAY_RE = re.compile(r"\$\$.*?\$\$|\\\[.*?\\\]", re.DOTALL)
 _MATH_INLINE_RE = re.compile(r"\$[^$\n]+?\$|\\\(.+?\\\)", re.DOTALL)
 
@@ -156,6 +163,7 @@ def _latex_prose_to_html(text: str) -> str:
         math.append(mo.group(0))
         return f"\x00M{len(math) - 1}\x00"
 
+    text = _MATH_ENV_RE.sub(_keep_math, text)
     text = _MATH_DISPLAY_RE.sub(_keep_math, text)
     text = _MATH_INLINE_RE.sub(_keep_math, text)
 
