@@ -21,6 +21,7 @@ from claimkit.core.staleness import (
     hash_file,
     mark_stale_claims,
 )
+from claimkit.core.statement import Statement, StatementStatus, StatementType
 from claimkit.core.validation import (
     ValidationResult,
     apply_all,
@@ -43,6 +44,9 @@ __all__ = [
     "ProvenanceGraph",
     "ProvenancePredicate",
     "ProvenanceRelation",
+    "Statement",
+    "StatementStatus",
+    "StatementType",
     "ValidationResult",
     "apply_all",
     "apply_validation",

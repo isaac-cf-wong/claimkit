@@ -65,7 +65,7 @@ def test_dumps_includes_version_envelope():
     doc = json.loads(dumps_graph(g))
     assert doc["schema_version"] == SCHEMA_VERSION
     assert "graph" in doc
-    assert {c["id"] for c in doc["graph"]["claims"]} == {"c1"}
+    assert {s["id"] for s in doc["graph"]["statements"]} == {"c1"}
 
 
 def test_file_roundtrip(tmp_path):

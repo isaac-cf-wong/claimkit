@@ -63,7 +63,11 @@ def test_to_dict_is_json_compatible():
     assert data == {
         "id": "claim-001",
         "statement": "A",
+        "type": "claim",
         "status": "valid",
+        "order": 0,
+        "section": None,
+        "source_digest": None,
         "created_at": claim.created_at.isoformat(),
         "updated_at": claim.updated_at.isoformat(),
         "tags": ["physics"],
