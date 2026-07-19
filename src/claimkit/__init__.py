@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from claimkit.core import (
+    ASSERTION_TYPES,
     Activity,
     ActivityKind,
     Claim,
@@ -47,6 +48,7 @@ from claimkit.reporting import render_claim_report, render_report
 from claimkit.version import __version__
 
 __all__ = [
+    "ASSERTION_TYPES",
     "SCHEMA_VERSION",
     "Activity",
     "ActivityKind",

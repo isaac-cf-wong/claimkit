@@ -21,7 +21,7 @@ from claimkit.core.staleness import (
     hash_file,
     mark_stale_claims,
 )
-from claimkit.core.statement import Statement, StatementStatus, StatementType
+from claimkit.core.statement import ASSERTION_TYPES, Statement, StatementStatus, StatementType
 from claimkit.core.validation import (
     ValidationResult,
     apply_all,
@@ -31,6 +31,7 @@ from claimkit.core.validation import (
 )
 
 __all__ = [
+    "ASSERTION_TYPES",
     "Activity",
     "ActivityKind",
     "Claim",

@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from claimkit.core.evidence import EvidenceKind
 from claimkit.core.graph import ProvenanceGraph
 from claimkit.core.provenance import NodeType, ProvenancePredicate
+from claimkit.core.statement import ASSERTION_TYPES, StatementType
 
 #: Evidence kinds counting as the authors' own first-hand support.
 _OWN_KINDS = frozenset(
@@ -112,13 +113,19 @@ def claim_coverage(graph: ProvenanceGraph, claim_id: str) -> ClaimCoverage:
     return cov
 
 
-def coverage(graph: ProvenanceGraph) -> dict[str, ClaimCoverage]:
-    """Classify support coverage for every claim in the graph.
+def coverage(graph: ProvenanceGraph, types: frozenset[StatementType] = ASSERTION_TYPES) -> dict[str, ClaimCoverage]:
+    """Classify support coverage for every asserting statement in the graph.
+
+    Only statements whose type is in ``types`` (by default claim / finding /
+    result) are checked — these are the ones that require support; background,
+    method, definition, and motivation may carry support but are not gaps when
+    they lack it.
 
     Args:
         graph: The provenance graph.
+        types: The statement types to include (default: the assertion types).
 
     Returns:
-        A mapping of claim id to its :class:`ClaimCoverage`.
+        A mapping of statement id to its :class:`ClaimCoverage`.
     """
-    return {cid: claim_coverage(graph, cid) for cid in graph.claims}
+    return {sid: claim_coverage(graph, sid) for sid, s in graph.statements.items() if s.type in types}

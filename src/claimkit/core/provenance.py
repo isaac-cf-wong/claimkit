@@ -58,6 +58,11 @@ class ProvenancePredicate(enum.StrEnum):
             (PROV ``wasAttributedTo``).
         REVIEWED_BY: The subject was reviewed by the object agent or activity.
         RELATES_TO: A generic association with no more specific predicate.
+        ELABORATES: The subject statement expands on the object statement.
+        CONTRASTS: The subject statement contrasts with the object statement.
+        DEPENDS_ON: The subject statement logically depends on the object.
+        CITES: The subject statement cites the object.
+        MOTIVATES: The subject statement motivates the object.
     """
 
     SUPPORTED_BY = "supported_by"
@@ -68,6 +73,12 @@ class ProvenancePredicate(enum.StrEnum):
     ATTRIBUTED_TO = "attributed_to"
     REVIEWED_BY = "reviewed_by"
     RELATES_TO = "relates_to"
+    # Discourse relations between statements (the article's logical flow).
+    ELABORATES = "elaborates"
+    CONTRASTS = "contrasts"
+    DEPENDS_ON = "depends_on"
+    CITES = "cites"
+    MOTIVATES = "motivates"
 
 
 def _utcnow() -> datetime:

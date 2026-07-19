@@ -69,6 +69,12 @@ class StatementType(enum.StrEnum):
     OTHER = "other"
 
 
+#: Statement types that *assert* something and therefore require support; the
+#: others (background/method/definition/motivation) may carry support but are not
+#: flagged as gaps when they lack it. Coverage and validation scope to these.
+ASSERTION_TYPES = frozenset({StatementType.CLAIM, StatementType.FINDING, StatementType.RESULT})
+
+
 def _utcnow() -> datetime:
     """Return the current time as a timezone-aware UTC datetime."""
     return datetime.now(UTC)
