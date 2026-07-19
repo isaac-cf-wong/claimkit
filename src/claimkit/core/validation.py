@@ -33,6 +33,7 @@ from typing import Any
 from claimkit.core.claim import ClaimStatus
 from claimkit.core.graph import ProvenanceGraph
 from claimkit.core.provenance import NodeType, ProvenancePredicate
+from claimkit.core.statement import ASSERTION_TYPES
 
 
 @dataclass
@@ -87,7 +88,7 @@ def validate_claim(graph: ProvenanceGraph, claim_id: str) -> ValidationResult:
         KeyError: If ``claim_id`` is not held by the graph.
 
     """
-    if claim_id not in graph.claims:
+    if claim_id not in graph.statements:
         raise KeyError(claim_id)
 
     supporting: list[str] = []
@@ -123,16 +124,19 @@ def validate_claim(graph: ProvenanceGraph, claim_id: str) -> ValidationResult:
 
 
 def validate_all(graph: ProvenanceGraph) -> dict[str, ValidationResult]:
-    """Validate every claim in the graph without mutating any of them.
+    """Validate every asserting statement in the graph without mutating any.
+
+    Scoped to the assertion statement types (claim / finding / result); other
+    statement types are not validated against evidence.
 
     Args:
         graph: The provenance graph to validate.
 
     Returns:
-        A mapping from claim id to its validation result.
+        A mapping from statement id to its validation result.
 
     """
-    return {claim_id: validate_claim(graph, claim_id) for claim_id in graph.claims}
+    return {sid: validate_claim(graph, sid) for sid, s in graph.statements.items() if s.type in ASSERTION_TYPES}
 
 
 def apply_validation(graph: ProvenanceGraph, claim_id: str) -> ValidationResult:
@@ -150,7 +154,7 @@ def apply_validation(graph: ProvenanceGraph, claim_id: str) -> ValidationResult:
 
     """
     result = validate_claim(graph, claim_id)
-    graph.claims[claim_id].mark(result.status)
+    graph.statements[claim_id].mark(result.status)
     return result
 
 
@@ -165,6 +169,6 @@ def apply_all(graph: ProvenanceGraph) -> list[ValidationResult]:
 
     """
     results = []
-    for claim_id in list(graph.claims):
-        results.append(apply_validation(graph, claim_id))
+    for sid in [s for s, st in graph.statements.items() if st.type in ASSERTION_TYPES]:
+        results.append(apply_validation(graph, sid))
     return results

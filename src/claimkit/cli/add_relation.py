@@ -29,7 +29,7 @@ def _detect_type(graph, node_id: str) -> NodeType | None:
     found = [
         node_type
         for node_type, store in (
-            (NodeType.CLAIM, graph.claims),
+            (NodeType.CLAIM, graph.statements),
             (NodeType.EVIDENCE, graph.evidence),
             (NodeType.ACTIVITY, graph.activities),
         )
@@ -63,7 +63,7 @@ def _resolve_type(graph, node_id: str, explicit: NodeType | None, role: str) -> 
         raise typer.Exit(code=1)
     if node_type in _STORED_TYPES:
         store = {
-            NodeType.CLAIM: graph.claims,
+            NodeType.CLAIM: graph.statements,
             NodeType.EVIDENCE: graph.evidence,
             NodeType.ACTIVITY: graph.activities,
         }[node_type]

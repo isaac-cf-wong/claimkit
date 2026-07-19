@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from claimkit.core.activity import Activity, ActivityKind
 from claimkit.core.claim import Claim, ClaimStatus
+from claimkit.core.coverage import ClaimCoverage, claim_coverage, coverage
 from claimkit.core.evidence import Evidence, EvidenceKind, EvidenceRelation
 from claimkit.core.graph import ProvenanceGraph
 from claimkit.core.provenance import NodeType, ProvenancePredicate, ProvenanceRelation
@@ -20,6 +21,7 @@ from claimkit.core.staleness import (
     hash_file,
     mark_stale_claims,
 )
+from claimkit.core.statement import ASSERTION_TYPES, Statement, StatementStatus, StatementType
 from claimkit.core.validation import (
     ValidationResult,
     apply_all,
@@ -29,9 +31,11 @@ from claimkit.core.validation import (
 )
 
 __all__ = [
+    "ASSERTION_TYPES",
     "Activity",
     "ActivityKind",
     "Claim",
+    "ClaimCoverage",
     "ClaimStatus",
     "DigestResolver",
     "Evidence",
@@ -41,10 +45,15 @@ __all__ = [
     "ProvenanceGraph",
     "ProvenancePredicate",
     "ProvenanceRelation",
+    "Statement",
+    "StatementStatus",
+    "StatementType",
     "ValidationResult",
     "apply_all",
     "apply_validation",
+    "claim_coverage",
     "compute_digest",
+    "coverage",
     "evidence_changed",
     "find_stale_claims",
     "find_stale_evidence",

@@ -113,8 +113,8 @@ def add_evidence_command(
     # De-duplicated, order-preserving list of claims to link to (may be empty).
     targets = list(dict.fromkeys([c for c in [claim_id, *(to_claim or [])] if c]))
     for target in targets:
-        if target not in graph.claims:
-            typer.echo(f"No such claim: {target}", err=True)
+        if target not in graph.statements:
+            typer.echo(f"No such statement: {target}", err=True)
             raise typer.Exit(code=1)
     if evidence_id is not None and evidence_id in graph.evidence:
         typer.echo(f"Evidence with id {evidence_id} already exists", err=True)

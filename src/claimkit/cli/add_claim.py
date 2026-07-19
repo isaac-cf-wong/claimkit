@@ -65,8 +65,8 @@ def add_claim_command(
 
     graph = load_graph(path)
 
-    if claim_id is not None and claim_id in graph.claims:
-        typer.echo(f"A claim with id {claim_id} already exists", err=True)
+    if claim_id is not None and claim_id in graph.statements:
+        typer.echo(f"A statement with id {claim_id} already exists", err=True)
         raise typer.Exit(code=1)
 
     claim_tags = list(tags) if tags else []

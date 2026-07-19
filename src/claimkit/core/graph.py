@@ -22,9 +22,9 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from claimkit.core.activity import Activity
-from claimkit.core.claim import Claim
 from claimkit.core.evidence import Evidence
 from claimkit.core.provenance import NodeType, ProvenancePredicate, ProvenanceRelation
+from claimkit.core.statement import Statement, StatementType
 
 
 @dataclass
@@ -36,31 +36,47 @@ class ProvenanceGraph:
     indexed by both endpoints for constant-time traversal.
 
     Attributes:
-        claims: Claims held by the graph, keyed by id.
+        statements: Statements held by the graph, keyed by id (a claim is the
+            ``StatementType.CLAIM`` case).
         evidence: Evidence held by the graph, keyed by id.
         activities: Activities held by the graph, keyed by id.
         relations: Edges held by the graph, keyed by id.
     """
 
-    claims: dict[str, Claim] = field(default_factory=dict)
+    statements: dict[str, Statement] = field(default_factory=dict)
     evidence: dict[str, Evidence] = field(default_factory=dict)
     activities: dict[str, Activity] = field(default_factory=dict)
     relations: dict[str, ProvenanceRelation] = field(default_factory=dict)
     _out: dict[str, list[str]] = field(default_factory=lambda: defaultdict(list), repr=False, compare=False)
     _in: dict[str, list[str]] = field(default_factory=lambda: defaultdict(list), repr=False, compare=False)
 
-    def add_claim(self, claim: Claim) -> Claim:
-        """Add or replace a claim.
+    @property
+    def claims(self) -> dict[str, Statement]:
+        """Claim-typed statements, keyed by id (backward-compatible view)."""
+        return {sid: s for sid, s in self.statements.items() if s.type is StatementType.CLAIM}
+
+    def add_statement(self, statement: Statement) -> Statement:
+        """Add or replace a statement.
 
         Args:
-            claim: The claim to store.
+            statement: The statement to store.
 
         Returns:
-            The stored claim.
-
+            The stored statement.
         """
-        self.claims[claim.id] = claim
-        return claim
+        self.statements[statement.id] = statement
+        return statement
+
+    def add_claim(self, claim: Statement) -> Statement:
+        """Add or replace a statement (backward-compatible alias for add_statement).
+
+        Args:
+            claim: The statement to store.
+
+        Returns:
+            The stored statement.
+        """
+        return self.add_statement(claim)
 
     def add_evidence(self, evidence: Evidence) -> Evidence:
         """Add or replace a piece of evidence.
@@ -176,13 +192,13 @@ class ProvenanceGraph:
         """Serialise the whole graph to a JSON-compatible dictionary.
 
         Returns:
-            A dictionary with ``claims``, ``evidence``, ``activities``, and
+            A dictionary with ``statements``, ``evidence``, ``activities``, and
             ``relations`` lists, each element produced by the corresponding
             model's ``to_dict``.
 
         """
         return {
-            "claims": [c.to_dict() for c in self.claims.values()],
+            "statements": [s.to_dict() for s in self.statements.values()],
             "evidence": [e.to_dict() for e in self.evidence.values()],
             "activities": [a.to_dict() for a in self.activities.values()],
             "relations": [r.to_dict() for r in self.relations.values()],
@@ -203,8 +219,9 @@ class ProvenanceGraph:
 
         """
         graph = cls()
-        for c in data.get("claims", []):
-            graph.add_claim(Claim.from_dict(c))
+        # v-next reads "statements"; pre-v-next graphs stored them under "claims".
+        for s in data.get("statements", data.get("claims", [])):
+            graph.add_statement(Statement.from_dict(s))
         for e in data.get("evidence", []):
             graph.add_evidence(Evidence.from_dict(e))
         for a in data.get("activities", []):

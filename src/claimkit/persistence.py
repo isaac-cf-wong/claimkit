@@ -17,7 +17,7 @@ from claimkit.core.graph import ProvenanceGraph
 
 #: Current on-disk schema version. Bump when the envelope or the underlying
 #: graph representation changes in a way that affects loading.
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2  # v2: claims -> statements (typed); pre-v2 "claims" still read
 
 
 def graph_to_document(graph: ProvenanceGraph) -> dict[str, Any]:
