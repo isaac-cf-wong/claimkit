@@ -52,10 +52,10 @@ def test_build_payload_shapes_and_status(tmp_path):
     """
     path = _graph_file(tmp_path)
     payload = build_payload(path)
-    assert payload["counts"] == {"claims": 1, "evidence": 1, "activities": 0}
-    assert payload["summary"].get("valid") == 1
+    assert payload["counts"] == {"statements": 1, "evidence": 1, "activities": 0}
+    assert payload["summary"].get("own") == 1
     types = {n["type"] for n in payload["nodes"]}
-    assert types == {"claim", "evidence"}
+    assert types == {"statement", "evidence"}
     assert len(payload["edges"]) == 1
 
 
@@ -74,7 +74,7 @@ def test_build_payload_detects_stale(tmp_path):
     assert build_payload(path)["summary"].get("stale") is None  # matches on disk
 
     artefact.write_bytes(b"CHANGED")
-    claim_node = next(n for n in build_payload(path)["nodes"] if n["type"] == "claim")
+    claim_node = next(n for n in build_payload(path)["nodes"] if n["type"] == "statement")
     assert claim_node["status"] == "stale"
 
 
@@ -98,8 +98,8 @@ def test_flask_app_serves_index_and_api(tmp_path):
     api = client.get("/api/graph")
     assert api.status_code == 200
     body = api.get_json()
-    assert body["counts"]["claims"] == 1
-    assert body["summary"].get("valid") == 1
+    assert body["counts"]["statements"] == 1
+    assert body["summary"].get("own") == 1
 
 
 def test_flask_app_serves_vendored_vis_network(tmp_path):
@@ -172,6 +172,35 @@ def test_build_doc_payload_resolves_and_flags_dangling(tmp_path):
     assert payload["refs"]["c1"]["known"] is True
     assert payload["refs"]["ghost"]["known"] is False
     assert payload["refs"]["ghost"]["status"] == "unknown"
+
+
+def test_build_doc_payload_flags_statement_drift(tmp_path):
+    """A statement whose draft span no longer matches its source_digest drifts.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    """
+    from claimkit import Statement
+    from claimkit.web import build_payload
+    from claimkit.web.app import build_doc_payload
+    from claimkit.web.document import text_digest
+
+    g = ProvenanceGraph()
+    g.add_statement(Statement(statement="captured", id="c1", source_digest=text_digest("original wording")))
+    g.add_statement(Statement(statement="no-digest", id="c2"))
+    path = tmp_path / "g.json"
+    save_graph(g, path)
+    doc = tmp_path / "d.tex"
+    doc.write_text(r"See \prov{c1}{changed wording} and \prov{c2}{whatever}.")
+
+    refs = build_doc_payload(doc, build_payload(path))["refs"]
+    assert refs["c1"]["drifted"] is True  # span text changed vs captured digest
+    assert refs["c2"]["drifted"] is False  # no source_digest -> cannot drift
+
+    doc.write_text(r"See \prov{c1}{original wording} and \prov{c2}{x}.")
+    refs = build_doc_payload(doc, build_payload(path))["refs"]
+    assert refs["c1"]["drifted"] is False  # whitespace-normalised match
 
 
 def test_doc_routes(tmp_path):

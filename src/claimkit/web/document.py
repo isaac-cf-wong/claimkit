@@ -22,6 +22,8 @@ import html
 import re
 from pathlib import Path
 
+from claimkit.core.staleness import compute_digest
+
 _INPUT_RE = re.compile(r"\\(?:input|include)\s*\{([^}]+)\}")
 _DOC_BODY_RE = re.compile(r"\\begin\{document\}(.*)\\end\{document\}", re.DOTALL)
 _MAX_INPUT_DEPTH = 15  # recursion guard for \input/\include expansion
@@ -363,6 +365,45 @@ def render_document(
         span = f'<span class="prov" data-id="{html.escape(prov_id)}">{inner}</span>'
         body = body.replace(_PROV_TOKEN.format(idx), span)
     return body, [pid for pid, _ in refs]
+
+
+def prov_contents(text: str, fmt: str) -> dict[str, str]:
+    r"""Map each provenance id to the raw draft span it marks.
+
+    Used for drift detection: hash the current span text and compare it to the
+    statement's stored ``source_digest``. When an id is marked more than once the
+    last occurrence wins.
+
+    Args:
+        text: The raw LaTeX or Markdown source (``\input`` already expanded).
+        fmt: ``"latex"`` or ``"markdown"``.
+
+    Returns:
+        ``{id: span_text}`` for every ``\prov`` / ``prov:`` mark in the draft.
+    """
+    if fmt == "latex":
+        body_match = _DOC_BODY_RE.search(text)
+        if body_match:
+            text = body_match.group(1)
+        _, refs = _extract_latex_prov(text)
+    else:
+        _, refs = _extract_markdown_prov(text)
+    return dict(refs)
+
+
+def text_digest(content: str) -> str:
+    """Whitespace-normalised ``sha256:`` digest of a draft span.
+
+    Whitespace is collapsed so reflowing prose (line wraps, indentation) does not
+    read as drift; only a real wording change moves the digest.
+
+    Args:
+        content: The raw span text.
+
+    Returns:
+        A ``sha256:``-prefixed hex digest of the normalised text.
+    """
+    return compute_digest(" ".join(content.split()).encode("utf-8"))
 
 
 def detect_format(path: str) -> str:
