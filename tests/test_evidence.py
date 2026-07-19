@@ -1,4 +1,4 @@
-"""Tests for the :class:`claimkit.core.evidence.Evidence` model."""
+"""Tests for the :class:`ideagraph.core.evidence.Evidence` model."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from claimkit.core import Claim, Evidence, EvidenceKind, EvidenceRelation
+from ideagraph.core import Claim, Evidence, EvidenceKind, EvidenceRelation
 
 
 def test_defaults():

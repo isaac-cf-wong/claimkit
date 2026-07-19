@@ -6,7 +6,7 @@ from pathlib import Path
 
 import mkdocs_gen_files
 
-PACKAGE_NAME = "claimkit"
+PACKAGE_NAME = "ideagraph"
 
 src = Path(__file__).parent.parent / "src"
 root_dir = Path(__file__).parent.parent

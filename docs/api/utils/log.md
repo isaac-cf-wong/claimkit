@@ -5,7 +5,7 @@ description: Logging functions.
 
 <!-- prettier-ignore-start -->
 
-::: claimkit.utils.log
+::: ideagraph.utils.log
     options:
         show_root_heading: false
         heading_level: 2

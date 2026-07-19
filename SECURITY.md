@@ -1,6 +1,6 @@
 # Security Policy
 
-We will support the latest stable release of `claimkit`. Please ensure you are
+We will support the latest stable release of `ideagraph`. Please ensure you are
 using the most recent version before reporting a security issue.
 
 | Version | Supported |
@@ -16,12 +16,12 @@ using the most recent version before reporting a security issue.
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in `claimkit`, please report it using
+If you discover a security vulnerability in `ideagraph`, please report it using
 **GitHub's private vulnerability reporting feature**:
 
 <!-- prettier-ignore-start -->
 
-1. Go to the [Security](https://github.com/isaac-cf-wong/claimkit/security) tab of this repository
+1. Go to the [Security](https://github.com/isaac-cf-wong/ideagraph/security) tab of this repository
 2. Click **"Report a vulnerability"**
 3. Fill out the vulnerability report form with:
     - A description of the vulnerability
@@ -50,4 +50,4 @@ We aim to:
 ## Thanks
 
 We value the security of our users and appreciate responsible disclosures. Thank
-you for helping make `claimkit` better and safer!
+you for helping make `ideagraph` better and safer!

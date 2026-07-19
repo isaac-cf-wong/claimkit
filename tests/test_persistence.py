@@ -1,4 +1,4 @@
-"""Tests for :mod:`claimkit.persistence`."""
+"""Tests for :mod:`ideagraph.persistence`."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from claimkit.core import (
+from ideagraph.core import (
     Activity,
     ActivityKind,
     Claim,
@@ -18,7 +18,7 @@ from claimkit.core import (
     ProvenancePredicate,
     ProvenanceRelation,
 )
-from claimkit.persistence import (
+from ideagraph.persistence import (
     SCHEMA_VERSION,
     dumps_graph,
     graph_from_document,

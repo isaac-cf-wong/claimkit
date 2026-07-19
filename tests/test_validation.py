@@ -1,10 +1,10 @@
-"""Tests for :mod:`claimkit.core.validation`."""
+"""Tests for :mod:`ideagraph.core.validation`."""
 
 from __future__ import annotations
 
 import pytest
 
-from claimkit.core import (
+from ideagraph.core import (
     Claim,
     ClaimStatus,
     Evidence,

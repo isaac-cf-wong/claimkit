@@ -1,11 +1,11 @@
-"""Tests for the ``claimkit import`` command."""
+"""Tests for the ``ideagraph import`` command."""
 
 from __future__ import annotations
 
 from typer.testing import CliRunner
 
-from claimkit.cli.main import app
-from claimkit.core import (
+from ideagraph.cli.main import app
+from ideagraph.core import (
     Claim,
     Evidence,
     EvidenceKind,
@@ -14,8 +14,8 @@ from claimkit.core import (
     ProvenancePredicate,
     ProvenanceRelation,
 )
-from claimkit.persistence import load_graph
-from claimkit.prov import dumps_prov
+from ideagraph.persistence import load_graph
+from ideagraph.prov import dumps_prov
 
 runner = CliRunner()
 
@@ -48,7 +48,7 @@ def _prov_file(path):
 
 
 def test_import_writes_graph(tmp_path):
-    """Import converts PROV-JSON into a loadable claimkit graph.
+    """Import converts PROV-JSON into a loadable ideagraph graph.
 
     Args:
         tmp_path: Pytest temporary directory fixture.

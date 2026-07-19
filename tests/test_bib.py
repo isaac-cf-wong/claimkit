@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from claimkit.bib import format_citation, parse_bibtex
+from ideagraph.bib import format_citation, parse_bibtex
 
 _BIB = r"""
 @article{Chan2020,

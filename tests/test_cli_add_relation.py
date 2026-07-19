@@ -1,12 +1,12 @@
-"""Tests for the ``claimkit add-relation`` command."""
+"""Tests for the ``ideagraph add-relation`` command."""
 
 from __future__ import annotations
 
 from typer.testing import CliRunner
 
-from claimkit.cli.main import app
-from claimkit.core import Activity, ActivityKind, ProvenancePredicate
-from claimkit.persistence import load_graph, save_graph
+from ideagraph.cli.main import app
+from ideagraph.core import Activity, ActivityKind, ProvenancePredicate
+from ideagraph.persistence import load_graph, save_graph
 
 runner = CliRunner()
 

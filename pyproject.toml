@@ -3,9 +3,9 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-name = "claimkit"
+name = "ideagraph"
 authors = [{ name = "Isaac C. F. Wong" }]
-description = "A claim-level provenance framework for scientific research"
+description = "An idea-graph engine: turn articles into a navigable graph of statements and their relationships"
 readme = "README.md"
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -21,7 +21,7 @@ dynamic = ["version"]
 dependencies = ["typer>=0.26.8"]
 
 [project.optional-dependencies]
-# `pip install claimkit[web]` enables the `claimkit serve` provenance web UI.
+# `pip install ideagraph[web]` enables the `ideagraph serve` provenance web UI.
 web = ["flask>=3.0"]
 
 [dependency-groups]
@@ -38,7 +38,9 @@ build = ["hatch>=1.17.1"]
 release = ["git-cliff>=2.13.1"]
 
 [project.scripts]
-claimkit = "claimkit.cli.main:app"
+ideagraph = "ideagraph.cli.main:app"
+# Deprecated alias for the old package name; removed in a future release.
+claimkit = "ideagraph.cli.main:app"
 
 [project.urls]
 Documentation = "https://isaac-cf-wong.github.io/claimkit"
@@ -61,7 +63,7 @@ lock = "minimal"
 source = "vcs"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/claimkit"]
+packages = ["src/ideagraph", "src/claimkit"]
 
 [tool.coverage.run]
 branch = true
@@ -158,6 +160,6 @@ convention = "google"
 # ARG001: allow unused function arguments (common in fixtures)
 # PLC0415: allow import statements not at the top level
 # PLR2004: allow magic values in the unit tests
-"src/claimkit/cli/*" = ["PLR0913"]
+"src/ideagraph/cli/*" = ["PLR0913"]
 # PLR0913: Typer maps each CLI option to a function parameter, so command
 # functions legitimately take more than five arguments.

@@ -5,7 +5,7 @@ description: Versioned JSON save/load for the provenance graph.
 
 <!-- prettier-ignore-start -->
 
-::: claimkit.persistence
+::: ideagraph.persistence
     options:
         show_root_heading: false
         heading_level: 2

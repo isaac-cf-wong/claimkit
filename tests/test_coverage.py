@@ -6,7 +6,7 @@ import json
 
 from typer.testing import CliRunner
 
-from claimkit import (
+from ideagraph import (
     Claim,
     Evidence,
     EvidenceKind,
@@ -16,8 +16,8 @@ from claimkit import (
     ProvenanceRelation,
     coverage,
 )
-from claimkit.cli.main import app
-from claimkit.persistence import save_graph
+from ideagraph.cli.main import app
+from ideagraph.persistence import save_graph
 
 runner = CliRunner()
 

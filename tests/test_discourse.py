@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typer.testing import CliRunner
 
-from claimkit import (
+from ideagraph import (
     Evidence,
     EvidenceKind,
     NodeType,
@@ -16,8 +16,8 @@ from claimkit import (
     coverage,
     validate_all,
 )
-from claimkit.cli.main import app
-from claimkit.persistence import load_graph, save_graph
+from ideagraph.cli.main import app
+from ideagraph.persistence import load_graph, save_graph
 
 runner = CliRunner()
 

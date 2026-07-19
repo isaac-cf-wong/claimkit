@@ -1,5 +1,5 @@
 # Vendored third-party asset (minified) — skip formatting/linting/size hooks.
-exclude: '^src/claimkit/web/static/'
+exclude: '^src/ideagraph/web/static/'
 
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks

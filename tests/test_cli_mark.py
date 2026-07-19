@@ -1,12 +1,12 @@
-"""Tests for the ``claimkit mark`` command."""
+"""Tests for the ``ideagraph mark`` command."""
 
 from __future__ import annotations
 
 from typer.testing import CliRunner
 
-from claimkit.cli.main import app
-from claimkit.core import ClaimStatus
-from claimkit.persistence import load_graph
+from ideagraph.cli.main import app
+from ideagraph.core import ClaimStatus
+from ideagraph.persistence import load_graph
 
 runner = CliRunner()
 

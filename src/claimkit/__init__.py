@@ -1,95 +1,61 @@
-"""Top-level package for claimkit."""
+"""Deprecated import alias: ``claimkit`` was renamed to :mod:`ideagraph`.
+
+Importing ``claimkit`` (or any ``claimkit.*`` submodule) transparently redirects
+to the ``ideagraph`` package, so existing code keeps working. A
+:class:`DeprecationWarning` is emitted once on first import. This alias is kept
+for a release or two and will be removed; migrate imports to ``ideagraph``.
+"""
 
 from __future__ import annotations
 
-from claimkit.core import (
-    ASSERTION_TYPES,
-    Activity,
-    ActivityKind,
-    Claim,
-    ClaimCoverage,
-    ClaimStatus,
-    DigestResolver,
-    Evidence,
-    EvidenceKind,
-    EvidenceRelation,
-    NodeType,
-    ProvenanceGraph,
-    ProvenancePredicate,
-    ProvenanceRelation,
-    Statement,
-    StatementStatus,
-    StatementType,
-    ValidationResult,
-    apply_all,
-    apply_validation,
-    claim_coverage,
-    compute_digest,
-    coverage,
-    evidence_changed,
-    find_stale_claims,
-    find_stale_evidence,
-    hash_file,
-    mark_stale_claims,
-    validate_all,
-    validate_claim,
-)
-from claimkit.persistence import (
-    SCHEMA_VERSION,
-    dumps_graph,
-    graph_from_document,
-    graph_to_document,
-    load_graph,
-    loads_graph,
-    save_graph,
-)
-from claimkit.prov import dumps_prov, from_prov, loads_prov, to_prov
-from claimkit.reporting import render_claim_report, render_report
-from claimkit.version import __version__
+import importlib
+import importlib.abc
+import importlib.util
+import sys
+import warnings
 
-__all__ = [
-    "ASSERTION_TYPES",
-    "SCHEMA_VERSION",
-    "Activity",
-    "ActivityKind",
-    "Claim",
-    "ClaimCoverage",
-    "ClaimStatus",
-    "DigestResolver",
-    "Evidence",
-    "EvidenceKind",
-    "EvidenceRelation",
-    "NodeType",
-    "ProvenanceGraph",
-    "ProvenancePredicate",
-    "ProvenanceRelation",
-    "Statement",
-    "StatementStatus",
-    "StatementType",
-    "ValidationResult",
-    "__version__",
-    "apply_all",
-    "apply_validation",
-    "claim_coverage",
-    "compute_digest",
-    "coverage",
-    "dumps_graph",
-    "dumps_prov",
-    "evidence_changed",
-    "find_stale_claims",
-    "find_stale_evidence",
-    "from_prov",
-    "graph_from_document",
-    "graph_to_document",
-    "hash_file",
-    "load_graph",
-    "loads_graph",
-    "loads_prov",
-    "mark_stale_claims",
-    "render_claim_report",
-    "render_report",
-    "save_graph",
-    "to_prov",
-    "validate_all",
-    "validate_claim",
-]
+_OLD = "claimkit"
+_NEW = "ideagraph"
+
+
+class _AliasLoader(importlib.abc.Loader):
+    """Load a ``claimkit[.x]`` name by returning the matching ``ideagraph`` module."""
+
+    def __init__(self, target: str) -> None:
+        self._target = target
+
+    def create_module(self, spec):
+        module = importlib.import_module(self._target)
+        sys.modules[spec.name] = module
+        return module
+
+    def exec_module(self, module):
+        return None
+
+
+class _AliasFinder(importlib.abc.MetaPathFinder):
+    """Redirect ``claimkit`` and ``claimkit.*`` imports to ``ideagraph``."""
+
+    def find_spec(self, name, path=None, target=None):
+        if name != _OLD and not name.startswith(_OLD + "."):
+            return None
+        redirected = _NEW + name[len(_OLD) :]
+        return importlib.util.spec_from_loader(name, _AliasLoader(redirected))
+
+
+# Install the finder ahead of the path-based finders so ``claimkit.core`` etc.
+# resolve to ``ideagraph.core`` rather than this shim's (empty) package path.
+if not any(isinstance(f, _AliasFinder) for f in sys.meta_path):
+    sys.meta_path.insert(0, _AliasFinder())
+
+warnings.warn(
+    "`claimkit` has been renamed to `ideagraph`; update your imports. "
+    "The `claimkit` alias will be removed in a future release.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+# Mirror the top-level public API so ``import claimkit; claimkit.Statement`` works.
+_ideagraph = importlib.import_module(_NEW)
+sys.modules[__name__].__dict__.update({k: v for k, v in _ideagraph.__dict__.items() if not k.startswith("__")})
+__all__ = list(getattr(_ideagraph, "__all__", []))

@@ -1,4 +1,4 @@
-"""Tests for the ``claimkit`` CLI commands."""
+"""Tests for the ``ideagraph`` CLI commands."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import json
 
 from typer.testing import CliRunner
 
-from claimkit.cli.main import app
-from claimkit.core import (
+from ideagraph.cli.main import app
+from ideagraph.core import (
     Claim,
     Evidence,
     EvidenceKind,
@@ -16,7 +16,7 @@ from claimkit.core import (
     ProvenancePredicate,
     ProvenanceRelation,
 )
-from claimkit.persistence import load_graph, save_graph
+from ideagraph.persistence import load_graph, save_graph
 
 runner = CliRunner()
 

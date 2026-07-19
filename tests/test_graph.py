@@ -1,8 +1,8 @@
-"""Tests for the :class:`claimkit.core.graph.ProvenanceGraph` aggregate."""
+"""Tests for the :class:`ideagraph.core.graph.ProvenanceGraph` aggregate."""
 
 from __future__ import annotations
 
-from claimkit.core import (
+from ideagraph.core import (
     Activity,
     ActivityKind,
     Claim,

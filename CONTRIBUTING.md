@@ -1,7 +1,7 @@
-# Contributing to claimkit
+# Contributing to ideagraph
 
-🎉 Thank you for your interest in contributing to `claimkit`! Your ideas, fixes,
-and improvements are welcome and appreciated.
+🎉 Thank you for your interest in contributing to `ideagraph`! Your ideas,
+fixes, and improvements are welcome and appreciated.
 
 Whether you’re fixing a typo, reporting a bug, suggesting a feature, or
 submitting a pull request—this guide will help you get started.
@@ -13,7 +13,7 @@ submitting a pull request—this guide will help you get started.
 1. Open an Issue
 
     - Have a question, bug report, or feature suggestion?
-    [Open an issue](https://github.com/isaac-cf-wong/claimkit/issues/new/choose)
+    [Open an issue](https://github.com/isaac-cf-wong/ideagraph/issues/new/choose)
     and describe your idea clearly.
     - Check for existing issues before opening a new one.
 
@@ -26,7 +26,7 @@ submitting a pull request—this guide will help you get started.
 
 3. Set Up Your Environment
 
-    We recommend using uv to manage virtual environments for installing `claimkit`.
+    We recommend using uv to manage virtual environments for installing `ideagraph`.
     If you don't have uv installed, you can install it with pip. See the project pages for more details:
 
     - Install via pip: `pip install --upgrade pip && pip install uv`
@@ -167,6 +167,6 @@ project’s 3-Clause BSD License.
 
 ---
 
-Thanks again for being part of the `claimkit` community!
+Thanks again for being part of the `ideagraph` community!
 
 ---

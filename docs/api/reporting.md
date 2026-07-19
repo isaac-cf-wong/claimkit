@@ -5,7 +5,7 @@ description: Human-readable Markdown provenance reports.
 
 <!-- prettier-ignore-start -->
 
-::: claimkit.reporting
+::: ideagraph.reporting
     options:
         show_root_heading: false
         heading_level: 2

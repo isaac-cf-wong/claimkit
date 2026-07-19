@@ -1,11 +1,11 @@
-"""Tests for :mod:`claimkit.prov` (PROV-JSON export)."""
+"""Tests for :mod:`ideagraph.prov` (PROV-JSON export)."""
 
 from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
 
-from claimkit.core import (
+from ideagraph.core import (
     Activity,
     ActivityKind,
     Claim,
@@ -17,7 +17,7 @@ from claimkit.core import (
     ProvenancePredicate,
     ProvenanceRelation,
 )
-from claimkit.prov import CK_NAMESPACE, dumps_prov, to_prov
+from ideagraph.prov import CK_NAMESPACE, dumps_prov, to_prov
 
 
 def _edge(subject, predicate, obj, edge_id):
@@ -52,7 +52,7 @@ def test_prefix_is_declared():
 
 
 def test_claim_and_evidence_become_entities():
-    """Claims and evidence map to prov:Entity with claimkit attributes."""
+    """Claims and evidence map to prov:Entity with ideagraph attributes."""
     g = ProvenanceGraph()
     g.add_claim(Claim(statement="A", id="c1", status=ClaimStatus.VALID))
     g.add_evidence(Evidence(claim_id="c1", kind=EvidenceKind.DATA, reference="r", id="e1", digest="sha256:aa"))
@@ -131,7 +131,7 @@ def test_derived_from_relation():
     }
 
 
-def test_claimkit_predicates_become_influence_with_note():
+def test_ideagraph_predicates_become_influence_with_note():
     """SUPPORTED_BY/REFUTED_BY export as wasInfluencedBy with ck:predicate."""
     g = ProvenanceGraph()
     g.add_claim(Claim(statement="A", id="c1"))
