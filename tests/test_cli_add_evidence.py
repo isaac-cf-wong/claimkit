@@ -128,7 +128,7 @@ def test_add_evidence_unknown_claim(tmp_path):
         ["add-evidence", str(path), "missing", "--kind", "data", "--reference", "r"],
     )
     assert result.exit_code == 1
-    assert "No such claim" in result.stderr
+    assert "No such statement" in result.stderr
 
 
 def test_add_evidence_duplicate_id(tmp_path):

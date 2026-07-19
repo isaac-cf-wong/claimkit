@@ -44,11 +44,11 @@ def mark_command(
         raise typer.Exit(code=1)
 
     graph = load_graph(path)
-    if claim_id not in graph.claims:
-        typer.echo(f"No such claim: {claim_id}", err=True)
+    if claim_id not in graph.statements:
+        typer.echo(f"No such statement: {claim_id}", err=True)
         raise typer.Exit(code=1)
 
-    claim = graph.claims[claim_id]
+    claim = graph.statements[claim_id]
     claim.mark(status)
     if note is not None:
         claim.metadata["review_note"] = note

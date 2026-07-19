@@ -78,7 +78,7 @@ def test_mark_unknown_claim(tmp_path):
     path = _graph_with_claim(tmp_path / "g.json")
     result = runner.invoke(app, ["mark", str(path), "missing", "valid"])
     assert result.exit_code == 1
-    assert "No such claim" in result.stderr
+    assert "No such statement" in result.stderr
 
 
 def test_mark_invalid_status_rejected(tmp_path):

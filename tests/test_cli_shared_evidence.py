@@ -113,4 +113,4 @@ def test_unknown_target_claim_errors(tmp_path):
         ["add-evidence", str(path), "c1", "--kind", "data", "--reference", "r", "--to-claim", "ghost"],
     )
     assert result.exit_code == 1
-    assert "No such claim: ghost" in result.stderr
+    assert "No such statement: ghost" in result.stderr
