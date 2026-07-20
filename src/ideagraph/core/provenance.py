@@ -63,6 +63,12 @@ class ProvenancePredicate(enum.StrEnum):
         DEPENDS_ON: The subject statement logically depends on the object.
         CITES: The subject statement cites the object.
         MOTIVATES: The subject statement motivates the object.
+        BUILDS_ON: The subject statement builds on the object (typically in
+            another article).
+        EXTENDS: The subject statement extends the object's idea.
+        CONTRADICTS: The subject statement contradicts the object.
+        SAME_AS: The subject statement expresses the same idea as the object
+            (e.g. the same result reported in two articles).
     """
 
     SUPPORTED_BY = "supported_by"
@@ -79,6 +85,11 @@ class ProvenancePredicate(enum.StrEnum):
     DEPENDS_ON = "depends_on"
     CITES = "cites"
     MOTIVATES = "motivates"
+    # Cross-article relations between ideas in different articles.
+    BUILDS_ON = "builds_on"
+    EXTENDS = "extends"
+    CONTRADICTS = "contradicts"
+    SAME_AS = "same_as"
 
 
 def _utcnow() -> datetime:
