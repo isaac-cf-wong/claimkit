@@ -259,6 +259,71 @@ class Library:
         """Return the set of statement global ids currently held in the index."""
         return {row["gid"] for row in self._conn.execute("SELECT gid FROM statements")}
 
+    def get_statement(self, gid: str) -> SearchHit | None:
+        """Return the indexed statement with this global id, or None.
+
+        Args:
+            gid: The statement's global id.
+
+        Returns:
+            The statement as a :class:`SearchHit`, or None if not indexed.
+        """
+        row = self._conn.execute(
+            "SELECT gid, article_id, node_id, stype, text FROM statements WHERE gid = ?", (gid,)
+        ).fetchone()
+        if row is None:
+            return None
+        return SearchHit(row["gid"], row["article_id"], row["node_id"], row["stype"], row["text"])
+
+    def unsupported_assertions(self) -> list[SearchHit]:
+        """Return asserting statements (claim/finding/result) left unresolved.
+
+        These are library-wide support gaps carried in each statement's status —
+        an assertion that has not been resolved against evidence.
+
+        Returns:
+            The unresolved assertion statements.
+        """
+        rows = self._conn.execute(
+            "SELECT gid, article_id, node_id, stype, text FROM statements "
+            "WHERE stype IN ('claim', 'finding', 'result') AND status = 'unresolved' "
+            "ORDER BY article_id, ord"
+        ).fetchall()
+        return [SearchHit(r["gid"], r["article_id"], r["node_id"], r["stype"], r["text"]) for r in rows]
+
+    def path(self, src_gid: str, dst_gid: str, *, max_depth: int = 8) -> list[str] | None:
+        """Find a shortest directed path of idea edges from src to dst.
+
+        Follows edges in their asserted direction (subject -> object). Both
+        intra-article and cross-article edges are traversable.
+
+        Args:
+            src_gid: Starting statement global id.
+            dst_gid: Target statement global id.
+            max_depth: Maximum path length to search.
+
+        Returns:
+            The sequence of global ids from src to dst (inclusive), or None if no
+            path of length <= ``max_depth`` exists.
+        """
+        if src_gid == dst_gid:
+            return [src_gid]
+        frontier: list[list[str]] = [[src_gid]]
+        seen = {src_gid}
+        for _ in range(max_depth):
+            nxt: list[list[str]] = []
+            for trail in frontier:
+                for edge in self.neighbors(trail[-1], direction="out"):
+                    if edge.dst_gid == dst_gid:
+                        return [*trail, dst_gid]
+                    if edge.dst_gid not in seen:
+                        seen.add(edge.dst_gid)
+                        nxt.append([*trail, edge.dst_gid])
+            if not nxt:
+                break
+            frontier = nxt
+        return None
+
     @staticmethod
     def _fts_query(query: str) -> str:
         """Turn free text into a safe FTS5 MATCH expression.
