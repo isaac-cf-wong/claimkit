@@ -7,6 +7,6 @@ stays dependency-light.
 
 from __future__ import annotations
 
-from ideagraph.web.app import build_payload, create_app
+from ideagraph.web.app import build_library_payload, build_payload, create_app
 
-__all__ = ["build_payload", "create_app"]
+__all__ = ["build_library_payload", "build_payload", "create_app"]
