@@ -90,14 +90,19 @@ def register_commands() -> None:
     from ideagraph.cli.add_relation import add_relation_command
     from ideagraph.cli.add_statement import add_statement_command
     from ideagraph.cli.add_xref import add_xref_command
+    from ideagraph.cli.backlinks import backlinks_command
     from ideagraph.cli.coverage import coverage_command
     from ideagraph.cli.digest import digest_command
     from ideagraph.cli.doctor import doctor_command
     from ideagraph.cli.export import export_command
+    from ideagraph.cli.find import find_command
+    from ideagraph.cli.gaps import gaps_command
     from ideagraph.cli.import_prov import import_command
     from ideagraph.cli.index import index_command
     from ideagraph.cli.init import init_command
     from ideagraph.cli.mark import mark_command
+    from ideagraph.cli.neighbors import neighbors_command
+    from ideagraph.cli.path import path_command
     from ideagraph.cli.report import report_command
     from ideagraph.cli.serve import serve_command
     from ideagraph.cli.set_article import set_article_command
@@ -116,6 +121,11 @@ def register_commands() -> None:
     app.command(name="digest")(digest_command)
     app.command(name="doctor")(doctor_command)
     app.command(name="index")(index_command)
+    app.command(name="find")(find_command)
+    app.command(name="neighbors")(neighbors_command)
+    app.command(name="backlinks")(backlinks_command)
+    app.command(name="path")(path_command)
+    app.command(name="gaps")(gaps_command)
     app.command(name="validate")(validate_command)
     app.command(name="mark")(mark_command)
     app.command(name="stale")(stale_command)
