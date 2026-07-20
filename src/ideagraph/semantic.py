@@ -38,7 +38,7 @@ class Embedder(Protocol):
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         """Return one vector per input text."""
-        ...
+        raise NotImplementedError
 
 
 def normalize(vector: list[float]) -> list[float]:
