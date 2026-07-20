@@ -45,8 +45,7 @@ def neighbors_command(
 
     from ideagraph.cli._library import open_indexed
 
-    lib = open_indexed(root, db)
-    try:
+    with open_indexed(root, db) as lib:
         edges = lib.neighbors(gid, direction=direction)
         if as_json:
             payload = [{"src": e.src_gid, "dst": e.dst_gid, "predicate": e.predicate, "kind": e.kind} for e in edges]
@@ -56,5 +55,3 @@ def neighbors_command(
         for e in edges:
             typer.echo("  " + _render_edge(lib, e, gid))
         typer.echo(f"\n{len(edges)} edge(s)")
-    finally:
-        lib.close()

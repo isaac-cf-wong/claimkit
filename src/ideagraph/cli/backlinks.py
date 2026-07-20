@@ -30,8 +30,7 @@ def backlinks_command(
 
     from ideagraph.cli._library import open_indexed
 
-    lib = open_indexed(root, db)
-    try:
+    with open_indexed(root, db) as lib:
         edges = lib.backlinks(gid)
         if as_json:
             payload = [
@@ -46,5 +45,3 @@ def backlinks_command(
             tag = "" if e.kind == "intra" else " [cross]"
             typer.echo(f"  {e.src_gid} -{e.predicate}->{tag}{text}")
         typer.echo(f"\n{len(edges)} backlink(s)")
-    finally:
-        lib.close()

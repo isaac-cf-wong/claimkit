@@ -34,12 +34,9 @@ def path_command(
 
     from ideagraph.cli._library import open_indexed
 
-    lib = open_indexed(root, db)
-    try:
+    with open_indexed(root, db) as lib:
         trail = lib.path(src, dst, max_depth=max_depth)
         resolved = [{"gid": g, "text": (h.text if (h := lib.get_statement(g)) else None)} for g in (trail or [])]
-    finally:
-        lib.close()
 
     if as_json:
         typer.echo(_json.dumps({"found": trail is not None, "path": resolved}, indent=2))

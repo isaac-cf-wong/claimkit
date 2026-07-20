@@ -34,11 +34,8 @@ def find_command(
 
     from ideagraph.cli._library import open_indexed
 
-    lib = open_indexed(root, db)
-    try:
+    with open_indexed(root, db) as lib:
         hits = [h for h in lib.search(query, limit=limit) if stype is None or h.stype == stype]
-    finally:
-        lib.close()
 
     if as_json:
         typer.echo(

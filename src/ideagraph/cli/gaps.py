@@ -31,12 +31,9 @@ def gaps_command(
 
     from ideagraph.cli._library import open_indexed
 
-    lib = open_indexed(root, db)
-    try:
+    with open_indexed(root, db) as lib:
         unsupported = lib.unsupported_assertions()
         dangling = lib.dangling_cross_references()
-    finally:
-        lib.close()
 
     if as_json:
         typer.echo(
