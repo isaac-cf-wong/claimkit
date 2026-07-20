@@ -10,7 +10,10 @@ import typer
 
 
 def serve_command(
-    path: Annotated[Path, typer.Argument(help="Path to a provenance graph JSON file.")],
+    path: Annotated[
+        Path | None,
+        typer.Argument(help="Path to a provenance graph JSON file (optional if --library is given)."),
+    ] = None,
     host: Annotated[str, typer.Option("--host", help="Interface to bind.")] = "127.0.0.1",
     port: Annotated[int, typer.Option("--port", help="Port to listen on.")] = 8000,
     base: Annotated[
@@ -24,6 +27,10 @@ def serve_command(
     bib: Annotated[
         Path | None,
         typer.Option("--bib", help="A BibTeX file to label literature evidence (citation keys -> titles)."),
+    ] = None,
+    library: Annotated[
+        Path | None,
+        typer.Option("--library", help="A library root: adds a Library tab with the cross-article idea graph."),
     ] = None,
 ) -> None:
     r"""Serve an interactive provenance web UI for a graph.
@@ -47,13 +54,20 @@ def serve_command(
         base: Directory relative evidence references resolve against.
         doc: Draft files (LaTeX/Markdown) to expose in the Document tab.
         bib: A BibTeX file to label literature evidence with citation titles.
+        library: A library root directory enabling the Library tab.
     """
     from logging import getLogger
 
     logger = getLogger("ideagraph")
 
-    if not path.exists():
+    if path is None and library is None:
+        typer.echo("Nothing to serve: give a graph PATH, --library, or both.", err=True)
+        raise typer.Exit(code=1)
+    if path is not None and not path.exists():
         typer.echo(f"No such file: {path}", err=True)
+        raise typer.Exit(code=1)
+    if library is not None and not library.exists():
+        typer.echo(f"No such directory: {library}", err=True)
         raise typer.Exit(code=1)
 
     try:
@@ -74,7 +88,7 @@ def serve_command(
         from ideagraph.bib import parse_bibtex
 
         bib_entries = parse_bibtex(bib)
-    app = create_app(path, base, docs=list(doc or []), bib=bib_entries)
-    logger.info("Serving provenance for %s at http://%s:%d", path, host, port)
-    typer.echo(f"ideagraph provenance UI -> http://{host}:{port}  (Ctrl-C to stop)")
+    app = create_app(path, base, docs=list(doc or []), bib=bib_entries, library=library)
+    logger.info("Serving ideagraph UI (graph=%s, library=%s) at http://%s:%d", path, library, host, port)
+    typer.echo(f"ideagraph UI -> http://{host}:{port}  (Ctrl-C to stop)")
     app.run(host=host, port=port)

@@ -400,6 +400,56 @@ class Library:
         """
         return self.neighbors(gid, direction="in")
 
+    def snapshot(self) -> dict:
+        """Return the whole library as a front-end-ready node/edge payload.
+
+        Nodes are every indexed statement (keyed by global id, grouped by
+        article); edges are the idea-level intra- and cross-article links. Cross
+        edges whose target is not indexed are still included (so dangling links
+        are visible), flagged via ``dangling``.
+
+        Returns:
+            A dict with ``articles``, ``nodes``, ``edges``, and ``counts``.
+        """
+        articles = [
+            {"id": r["article_id"], "title": r["title"]}
+            for r in self._conn.execute("SELECT article_id, title FROM articles ORDER BY article_id")
+        ]
+        nodes = [
+            {
+                "id": r["gid"],
+                "article": r["article_id"],
+                "node": r["node_id"],
+                "stype": r["stype"],
+                "status": r["status"],
+                "text": r["text"],
+            }
+            for r in self._conn.execute(
+                "SELECT gid, article_id, node_id, stype, status, text FROM statements ORDER BY article_id, ord"
+            )
+        ]
+        known = {n["id"] for n in nodes}
+        edges = [
+            {
+                "source": r["src_gid"],
+                "target": r["dst_gid"],
+                "predicate": r["predicate"],
+                "kind": r["kind"],
+                "dangling": r["kind"] == "cross" and r["dst_gid"] not in known,
+            }
+            for r in self._conn.execute("SELECT src_gid, dst_gid, predicate, kind FROM edges")
+        ]
+        return {
+            "articles": articles,
+            "nodes": nodes,
+            "edges": edges,
+            "counts": {
+                "articles": len(articles),
+                "statements": len(nodes),
+                "cross_edges": sum(1 for e in edges if e["kind"] == "cross"),
+            },
+        }
+
     def dangling_cross_references(self) -> list[Edge]:
         """Return cross-article edges whose target statement is not in the index.
 

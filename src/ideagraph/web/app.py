@@ -200,19 +200,38 @@ def build_doc_payload(doc_path: str | Path, graph_payload: dict[str, Any]) -> di
     return {"name": doc_path.name, "format": fmt, "html": body, "refs": refs}
 
 
+def build_library_payload(root: str | Path) -> dict[str, Any]:
+    """Index a library and return its cross-article snapshot for the web view.
+
+    Args:
+        root: Library root directory.
+
+    Returns:
+        The library snapshot (``articles`` / ``nodes`` / ``edges`` / ``counts``).
+    """
+    from ideagraph.library import Library
+
+    with Library(root) as lib:
+        lib.index()
+        return lib.snapshot()
+
+
 def create_app(
-    graph_path: str | Path,
+    graph_path: str | Path | None = None,
     base: str | Path | None = None,
     docs: list[str | Path] | None = None,
     bib: dict[str, dict[str, str]] | None = None,
+    library: str | Path | None = None,
 ):
     """Build the Flask app serving the provenance UI.
 
     Args:
-        graph_path: Path to the ideagraph graph JSON file.
+        graph_path: Path to the ideagraph graph JSON file (Graph/Document tabs).
         base: Directory relative evidence references resolve against.
         docs: Optional draft files (LaTeX/Markdown) to expose in the Document tab.
         bib: Optional parsed BibTeX for labelling literature evidence.
+        library: Optional library root directory (enables the Library tab: the
+            cross-article idea graph over every article under it).
 
     Returns:
         A configured :class:`flask.Flask` application.
@@ -228,9 +247,21 @@ def create_app(
     doc_list = [Path(d) for d in (docs or [])]
     app = Flask(__name__)
 
+    @app.route("/api/config")
+    def api_config():  # type: ignore[no-untyped-def]
+        return jsonify({"graph": graph_path is not None, "library": library is not None})
+
     @app.route("/api/graph")
     def api_graph():  # type: ignore[no-untyped-def]
+        if graph_path is None:
+            abort(404)
         return jsonify(build_payload(graph_path, base, bib))
+
+    @app.route("/api/library")
+    def api_library():  # type: ignore[no-untyped-def]
+        if library is None:
+            abort(404)
+        return jsonify(build_library_payload(library))
 
     @app.route("/api/docs")
     def api_docs():  # type: ignore[no-untyped-def]
@@ -312,6 +343,8 @@ _INDEX_HTML = """<!doctype html>
   .view { flex:1; display:flex; flex-direction:column; min-width:0; min-height:0; }
   .view.hidden { display:none; }
   #net { flex:1; min-height:0; background:#fbfcfe; }
+  #libnet { flex:1; min-height:0; background:#fbfcfe; }
+  #libbar { padding:8px 16px; border-bottom:1px solid #dde3ec; background:#eef2f7; font-size:13px; color:#42536a; }
   #docbar { padding:8px 16px; border-bottom:1px solid #dde3ec; background:#eef2f7; font-size:13px; }
   #docbody { flex:1; overflow:auto; padding:28px 48px; }
   #docbody article { max-width:880px; margin:0 auto; font-size:19px; line-height:1.7; color:#1c2735; }
@@ -347,12 +380,13 @@ _INDEX_HTML = """<!doctype html>
 <div id="bar">
   <b>ideagraph provenance</b>
   <span class="tabs">
-    <span class="tab active" id="tab-graph" onclick="showTab('graph')">Graph</span>
+    <span class="tab hidden" id="tab-graph" onclick="showTab('graph')">Graph</span>
     <span class="tab hidden" id="tab-doc" onclick="showTab('doc')">Document</span>
+    <span class="tab hidden" id="tab-library" onclick="showTab('library')">Library</span>
   </span>
   <span id="summary"></span>
   <span class="counts" id="counts"></span>
-  <span class="legend">
+  <span class="legend" id="toplegend">
     <span><i class="sw" style="background:#3949ab"></i>claim</span>
     <span><i class="sw" style="background:#00897b"></i>finding</span>
     <span><i class="sw" style="background:#8d6e63"></i>background</span>
@@ -376,6 +410,11 @@ _INDEX_HTML = """<!doctype html>
       Click a mark to inspect.</span></div>
     <div id="docbody"><article id="docart"></article></div>
   </div>
+  <div class="view hidden" id="view-library">
+    <div id="libbar">Library idea graph — nodes coloured by article; dashed red = dangling cross-reference.
+      <span class="hint" id="libarticles"></span></div>
+    <div id="libnet"></div>
+  </div>
   <div id="panel"><span class="hint">Click a node or a provenance mark to inspect it.</span></div>
 </div>
 <script>
@@ -390,11 +429,22 @@ const DISCOURSE = new Set(["elaborates","contrasts","depends_on","cites","motiva
 let byId = {};
 function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 
+const TABS = ["graph","doc","library"];
 function showTab(t){
-  document.getElementById("view-graph").classList.toggle("hidden", t!=="graph");
-  document.getElementById("view-doc").classList.toggle("hidden", t!=="doc");
-  document.getElementById("tab-graph").classList.toggle("active", t==="graph");
-  document.getElementById("tab-doc").classList.toggle("active", t==="doc");
+  for (const x of TABS){
+    document.getElementById("view-"+x).classList.toggle("hidden", x!==t);
+    document.getElementById("tab-"+x).classList.toggle("active", x===t);
+  }
+  // The top legend describes statement types (Graph/Document); the Library view
+  // colours by article and carries its own legend, so hide it there.
+  document.getElementById("toplegend").style.visibility = (t==="library") ? "hidden" : "visible";
+}
+// Distinct, stable colour per article for the library view.
+const ARTICLE_PALETTE = ["#3949ab","#00897b","#d98324","#c2185b","#6a4fa3","#00acc1","#7cb342","#8d6e63","#e0245e","#5c6bc0"];
+const _artColor = {};
+function articleColor(a){
+  if (!(a in _artColor)) _artColor[a] = ARTICLE_PALETTE[Object.keys(_artColor).length % ARTICLE_PALETTE.length];
+  return _artColor[a];
 }
 
 function showNode(id){
@@ -483,7 +533,66 @@ async function loadDocs(){
   loadDoc(0);
 }
 
-loadGraph().then(loadDocs);
+let libById = {};
+function showLibNode(id){
+  const n = libById[id];
+  const panel = document.getElementById("panel");
+  if (!n){ panel.innerHTML = `<h3>${esc(id)}</h3><span class="badge" style="background:#e0245e">not in library</span>`
+      + `<div class="stmt">A cross-reference points here, but the target statement is not indexed — dangling.</div>`; return; }
+  const bg = STYPE[n.stype] || "#8895a7";
+  let h = `<h3>${esc(n.id)}</h3><span class="badge" style="background:${bg}">${esc(n.stype)}</span>`;
+  h += `<div class="stmt">${esc(n.text)}</div>`;
+  h += `<div class="kv"><b>article:</b> ${esc(n.article)}</div>`;
+  if (n.status) h += `<div class="kv"><b>status:</b> ${esc(n.status)}</div>`;
+  panel.innerHTML = h;
+}
+
+async function loadLibrary(){
+  const data = await (await fetch("/api/library")).json();
+  libById = Object.fromEntries(data.nodes.map(n => [n.id, n]));
+  const nodes = data.nodes.map(n => {
+    const bg = articleColor(n.article);
+    return { id:n.id, label:n.node, group:n.article, shape:"box",
+      color:{ background:bg, border:bg, highlight:{background:bg, border:"#111"} },
+      font:{ color:"#ffffff", size:16, face:"system-ui" },
+      margin:10, widthConstraint:{ maximum:200 }, shapeProperties:{ borderRadius:7 }, borderWidth:2 };
+  });
+  // Include dangling cross-targets as stub nodes so the edge has an endpoint.
+  for (const e of data.edges){
+    if (e.dangling && !(e.target in libById)){
+      libById[e.target] = null;
+      nodes.push({ id:e.target, label:e.target, shape:"box", color:{background:"#fdecef",border:"#e0245e"},
+        font:{color:"#e0245e",size:14}, borderWidth:2, shapeProperties:{borderRadius:7}, margin:8 });
+    }
+  }
+  const edges = data.edges.map(e => {
+    const cross = e.kind === "cross";
+    const col = e.dangling ? "#e0245e" : (cross ? "#d98324" : "#c3ccd8");
+    return { from:e.source, to:e.target, arrows:{to:{scaleFactor:.6}},
+      dashes: cross, label: cross ? e.predicate : undefined,
+      font:{ size:11, color:col, strokeWidth:3, strokeColor:"#ffffff" },
+      color:{ color:col, highlight:"#5b6b7f" }, width: cross ? 2 : 1.2 };
+  });
+  document.getElementById("libarticles").innerHTML = "&nbsp; " + data.articles.map(a =>
+    `<span style="color:${articleColor(a.id)};font-weight:700">■</span> ${esc(a.id)}`).join(" &nbsp; ")
+    + ` &nbsp;·&nbsp; ${data.counts.statements} statements, ${data.counts.cross_edges} cross-links`;
+  const net = new vis.Network(document.getElementById("libnet"),
+    { nodes:new vis.DataSet(nodes), edges:new vis.DataSet(edges) },
+    { physics:{ enabled:true, stabilization:{iterations:200}, barnesHut:{springLength:140, gravitationalConstant:-8000} },
+      interaction:{ hover:true, tooltipDelay:120 } });
+  net.on("click", p => p.nodes.length ? showLibNode(p.nodes[0])
+    : (document.getElementById("panel").innerHTML = '<span class="hint">Click a node or a provenance mark to inspect it.</span>'));
+}
+
+async function init(){
+  let cfg = { graph:true, library:false };
+  try { cfg = await (await fetch("/api/config")).json(); } catch(e){}
+  const first = cfg.graph ? "graph" : "library";
+  if (cfg.graph){ document.getElementById("tab-graph").classList.remove("hidden"); await loadGraph(); await loadDocs(); }
+  if (cfg.library){ document.getElementById("tab-library").classList.remove("hidden"); await loadLibrary(); }
+  showTab(first);
+}
+init();
 </script>
 </body>
 </html>
