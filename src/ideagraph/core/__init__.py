@@ -9,8 +9,11 @@ from __future__ import annotations
 from ideagraph.core.activity import Activity, ActivityKind
 from ideagraph.core.claim import Claim, ClaimStatus
 from ideagraph.core.coverage import ClaimCoverage, claim_coverage, coverage
+from ideagraph.core.cross_reference import CrossReference
+from ideagraph.core.diagnostics import Diagnostic, diagnose
 from ideagraph.core.evidence import Evidence, EvidenceKind, EvidenceRelation
 from ideagraph.core.graph import ProvenanceGraph
+from ideagraph.core.identity import global_id, is_global_id, parse_global_id
 from ideagraph.core.provenance import NodeType, ProvenancePredicate, ProvenanceRelation
 from ideagraph.core.staleness import (
     DigestResolver,
@@ -37,6 +40,8 @@ __all__ = [
     "Claim",
     "ClaimCoverage",
     "ClaimStatus",
+    "CrossReference",
+    "Diagnostic",
     "DigestResolver",
     "Evidence",
     "EvidenceKind",
@@ -54,11 +59,15 @@ __all__ = [
     "claim_coverage",
     "compute_digest",
     "coverage",
+    "diagnose",
     "evidence_changed",
     "find_stale_claims",
     "find_stale_evidence",
+    "global_id",
     "hash_file",
+    "is_global_id",
     "mark_stale_claims",
+    "parse_global_id",
     "validate_all",
     "validate_claim",
 ]

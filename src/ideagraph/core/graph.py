@@ -22,7 +22,9 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from ideagraph.core.activity import Activity
+from ideagraph.core.cross_reference import CrossReference
 from ideagraph.core.evidence import Evidence
+from ideagraph.core.identity import global_id as _global_id
 from ideagraph.core.provenance import NodeType, ProvenancePredicate, ProvenanceRelation
 from ideagraph.core.statement import Statement, StatementType
 
@@ -40,13 +42,23 @@ class ProvenanceGraph:
             ``StatementType.CLAIM`` case).
         evidence: Evidence held by the graph, keyed by id.
         activities: Activities held by the graph, keyed by id.
-        relations: Edges held by the graph, keyed by id.
+        relations: Intra-article edges held by the graph, keyed by id.
+        cross_references: Cross-article edges (this article -> another), keyed
+            by id.
+        article_id: This graph's stable article id. Statements are addressed
+            globally as ``article_id#node_id``; required before another article
+            can reference this one, and before this article can point outward
+            with a resolvable back-reference.
+        metadata: Arbitrary graph-level metadata (e.g. ``title``).
     """
 
     statements: dict[str, Statement] = field(default_factory=dict)
     evidence: dict[str, Evidence] = field(default_factory=dict)
     activities: dict[str, Activity] = field(default_factory=dict)
     relations: dict[str, ProvenanceRelation] = field(default_factory=dict)
+    cross_references: dict[str, CrossReference] = field(default_factory=dict)
+    article_id: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
     _out: dict[str, list[str]] = field(default_factory=lambda: defaultdict(list), repr=False, compare=False)
     _in: dict[str, list[str]] = field(default_factory=lambda: defaultdict(list), repr=False, compare=False)
 
@@ -77,6 +89,35 @@ class ProvenanceGraph:
             The stored statement.
         """
         return self.add_statement(claim)
+
+    def add_cross_reference(self, cross_reference: CrossReference) -> CrossReference:
+        """Add or replace a cross-article edge.
+
+        Args:
+            cross_reference: The cross-article edge to store.
+
+        Returns:
+            The stored cross-article edge.
+        """
+        self.cross_references[cross_reference.id] = cross_reference
+        return cross_reference
+
+    def global_id(self, node_id: str) -> str:
+        """Return the global address ``article_id#node_id`` for a local node.
+
+        Args:
+            node_id: A local statement id.
+
+        Returns:
+            The global address.
+
+        Raises:
+            ValueError: If this graph has no ``article_id`` set, or the id is
+                malformed.
+        """
+        if self.article_id is None:
+            raise ValueError("graph has no article_id; set one before building global ids")
+        return _global_id(self.article_id, node_id)
 
     def add_evidence(self, evidence: Evidence) -> Evidence:
         """Add or replace a piece of evidence.
@@ -198,10 +239,13 @@ class ProvenanceGraph:
 
         """
         return {
+            "article_id": self.article_id,
+            "metadata": dict(self.metadata),
             "statements": [s.to_dict() for s in self.statements.values()],
             "evidence": [e.to_dict() for e in self.evidence.values()],
             "activities": [a.to_dict() for a in self.activities.values()],
             "relations": [r.to_dict() for r in self.relations.values()],
+            "cross_references": [x.to_dict() for x in self.cross_references.values()],
         }
 
     @classmethod
@@ -219,6 +263,9 @@ class ProvenanceGraph:
 
         """
         graph = cls()
+        graph.article_id = data.get("article_id")
+        if data.get("metadata") is not None:
+            graph.metadata = dict(data["metadata"])
         # v-next reads "statements"; pre-v-next graphs stored them under "claims".
         for s in data.get("statements", data.get("claims", [])):
             graph.add_statement(Statement.from_dict(s))
@@ -228,4 +275,6 @@ class ProvenanceGraph:
             graph.add_activity(Activity.from_dict(a))
         for r in data.get("relations", []):
             graph.add_relation(ProvenanceRelation.from_dict(r))
+        for x in data.get("cross_references", []):
+            graph.add_cross_reference(CrossReference.from_dict(x))
         return graph

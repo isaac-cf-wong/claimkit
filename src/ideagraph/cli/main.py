@@ -89,25 +89,31 @@ def register_commands() -> None:
     from ideagraph.cli.add_evidence import add_evidence_command
     from ideagraph.cli.add_relation import add_relation_command
     from ideagraph.cli.add_statement import add_statement_command
+    from ideagraph.cli.add_xref import add_xref_command
     from ideagraph.cli.coverage import coverage_command
     from ideagraph.cli.digest import digest_command
+    from ideagraph.cli.doctor import doctor_command
     from ideagraph.cli.export import export_command
     from ideagraph.cli.import_prov import import_command
     from ideagraph.cli.init import init_command
     from ideagraph.cli.mark import mark_command
     from ideagraph.cli.report import report_command
     from ideagraph.cli.serve import serve_command
+    from ideagraph.cli.set_article import set_article_command
     from ideagraph.cli.stale import stale_command
     from ideagraph.cli.validate import validate_command
 
     app.command(name="init")(init_command)
+    app.command(name="set-article")(set_article_command)
     app.command(name="add-statement")(add_statement_command)
     app.command(name="add-claim")(add_claim_command)
     app.command(name="add-evidence")(add_evidence_command)
     app.command(name="add-activity")(add_activity_command)
     app.command(name="add-relation")(add_relation_command)
+    app.command(name="add-xref")(add_xref_command)
     app.command(name="coverage")(coverage_command)
     app.command(name="digest")(digest_command)
+    app.command(name="doctor")(doctor_command)
     app.command(name="validate")(validate_command)
     app.command(name="mark")(mark_command)
     app.command(name="stale")(stale_command)
