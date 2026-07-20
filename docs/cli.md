@@ -1,11 +1,11 @@
 ---
 title: Command line
-description: The claimkit command-line interface.
+description: The ideagraph command-line interface.
 ---
 
-ClaimKit ships a `claimkit` command for building and checking a provenance graph
-stored as a JSON file. Run `claimkit --help` (or `claimkit COMMAND --help`) for
-the authoritative, always-current option list.
+ideagraph ships a `ideagraph` command for building and checking a provenance
+graph stored as a JSON file. Run `ideagraph --help` (or
+`ideagraph COMMAND --help`) for the authoritative, always-current option list.
 
 ## Commands
 
@@ -32,11 +32,11 @@ the authoritative, always-current option list.
 ## Example
 
 ```bash
-claimkit init graph.json
-CLAIM=$(claimkit add-claim graph.json "Half-life measured at 5.2 days." --tag decay)
-claimkit add-evidence graph.json "$CLAIM" \
+ideagraph init graph.json
+CLAIM=$(ideagraph add-claim graph.json "Half-life measured at 5.2 days." --tag decay)
+ideagraph add-evidence graph.json "$CLAIM" \
     --kind workflow --reference run-42 --digest sha256:abc123
 
-claimkit validate graph.json --apply
-claimkit report graph.json
+ideagraph validate graph.json --apply
+ideagraph report graph.json
 ```

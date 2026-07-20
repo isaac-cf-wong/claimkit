@@ -5,7 +5,7 @@ description: Utility functions.
 
 <!-- prettier-ignore-start -->
 
-::: claimkit.utils
+::: ideagraph.utils
     options:
         show_root_heading: false
         heading_level: 2

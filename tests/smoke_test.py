@@ -5,23 +5,23 @@ from __future__ import annotations
 import subprocess
 import sys
 
-import claimkit
+import ideagraph
 
 
 def test_basic_import() -> None:
     """Test basic import."""
     print(f"Python version: {sys.version}")
-    print(f"Package version: {claimkit.__version__}")
+    print(f"Package version: {ideagraph.__version__}")
 
     # Ensure it's not importing the local folder
-    if "site-packages" not in claimkit.__file__ and "dist" not in claimkit.__file__:
-        print(f"Warning: Package imported from unexpected location: {claimkit.__file__}")
+    if "site-packages" not in ideagraph.__file__ and "dist" not in ideagraph.__file__:
+        print(f"Warning: Package imported from unexpected location: {ideagraph.__file__}")
 
 
 def test_cli_help() -> None:
     """Test CLI help."""
-    # Ensure the 'claimkit' entry point is installed and runs
-    result = subprocess.run(["claimkit", "--help"], capture_output=True, text=True, check=False)  # noqa: S607
+    # Ensure the 'ideagraph' entry point is installed and runs
+    result = subprocess.run(["ideagraph", "--help"], capture_output=True, text=True, check=False)  # noqa: S607
     assert result.returncode == 0
     assert "usage:" in result.stdout.lower()
 

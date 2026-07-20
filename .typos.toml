@@ -18,3 +18,7 @@ extend-ignore-re = [
   # next line with potential false positive
   "(<!--|#|//)\\s*typos:ignore-next-line\\s*.*?(-->)?\\n.*",
 ]
+
+[files]
+# Vendored third-party libraries (offline copies) — not our source to spell-check.
+extend-exclude = ["src/ideagraph/web/static/"]

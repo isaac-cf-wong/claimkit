@@ -1,4 +1,4 @@
-"""Test importing the python-claimkit package and its modules."""
+"""Test importing the python-ideagraph package and its modules."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import pkgutil
 
 import pytest
 
-import claimkit
+import ideagraph
 
 
 def get_all_submodules(package):
@@ -23,12 +23,12 @@ def get_all_submodules(package):
 
 
 def test_import_main_package():
-    """Test that the main claimkit package can be imported."""
-    assert hasattr(claimkit, "__version__")
-    assert claimkit.__version__ is not None
+    """Test that the main ideagraph package can be imported."""
+    assert hasattr(ideagraph, "__version__")
+    assert ideagraph.__version__ is not None
 
 
-@pytest.mark.parametrize("module_name", get_all_submodules(claimkit))
+@pytest.mark.parametrize("module_name", get_all_submodules(ideagraph))
 def test_import_submodule(module_name):
     """Test that all submodules can be imported."""
     __import__(module_name)

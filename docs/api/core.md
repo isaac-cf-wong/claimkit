@@ -5,7 +5,7 @@ description: Claims, evidence, activities, and the provenance graph.
 
 <!-- prettier-ignore-start -->
 
-::: claimkit.core
+::: ideagraph.core
     options:
         show_root_heading: false
         heading_level: 2

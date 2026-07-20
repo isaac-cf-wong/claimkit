@@ -1,11 +1,11 @@
-"""Tests for the ``claimkit init`` and ``claimkit add-claim`` commands."""
+"""Tests for the ``ideagraph init`` and ``ideagraph add-claim`` commands."""
 
 from __future__ import annotations
 
 from typer.testing import CliRunner
 
-from claimkit.cli.main import app
-from claimkit.persistence import load_graph
+from ideagraph.cli.main import app
+from ideagraph.persistence import load_graph
 
 runner = CliRunner()
 

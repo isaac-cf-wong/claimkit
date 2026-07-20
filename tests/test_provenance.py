@@ -1,4 +1,4 @@
-"""Tests for the :class:`claimkit.core.provenance.ProvenanceRelation` model."""
+"""Tests for the :class:`ideagraph.core.provenance.ProvenanceRelation` model."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from claimkit.core import NodeType, ProvenancePredicate, ProvenanceRelation
+from ideagraph.core import NodeType, ProvenancePredicate, ProvenanceRelation
 
 
 def _edge(**overrides):

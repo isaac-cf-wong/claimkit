@@ -1,10 +1,10 @@
-"""Tests for :mod:`claimkit.reporting`."""
+"""Tests for :mod:`ideagraph.reporting`."""
 
 from __future__ import annotations
 
 import pytest
 
-from claimkit.core import (
+from ideagraph.core import (
     Claim,
     ClaimStatus,
     Evidence,
@@ -14,7 +14,7 @@ from claimkit.core import (
     ProvenancePredicate,
     ProvenanceRelation,
 )
-from claimkit.reporting import render_claim_report, render_report
+from ideagraph.reporting import render_claim_report, render_report
 
 
 def _link(claim_id: str, evidence_id: str, predicate: ProvenancePredicate, edge_id: str) -> ProvenanceRelation:

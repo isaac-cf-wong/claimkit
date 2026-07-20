@@ -1,4 +1,4 @@
-"""Tests for the :class:`claimkit.core.activity.Activity` model."""
+"""Tests for the :class:`ideagraph.core.activity.Activity` model."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from claimkit.core import Activity, ActivityKind
+from ideagraph.core import Activity, ActivityKind
 
 
 def test_defaults():

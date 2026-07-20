@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typer.testing import CliRunner
 
-from claimkit.cli.main import app
-from claimkit.core import ProvenancePredicate
-from claimkit.persistence import load_graph
+from ideagraph.cli.main import app
+from ideagraph.core import ProvenancePredicate
+from ideagraph.persistence import load_graph
 
 runner = CliRunner()
 

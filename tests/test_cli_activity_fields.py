@@ -6,8 +6,8 @@ from datetime import datetime
 
 from typer.testing import CliRunner
 
-from claimkit.cli.main import app
-from claimkit.persistence import load_graph
+from ideagraph.cli.main import app
+from ideagraph.persistence import load_graph
 
 runner = CliRunner()
 

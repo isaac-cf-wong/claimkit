@@ -1,10 +1,10 @@
-"""Tests for PROV-JSON import (:func:`claimkit.prov.from_prov`)."""
+"""Tests for PROV-JSON import (:func:`ideagraph.prov.from_prov`)."""
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from claimkit.core import (
+from ideagraph.core import (
     Activity,
     ActivityKind,
     Claim,
@@ -17,7 +17,7 @@ from claimkit.core import (
     ProvenancePredicate,
     ProvenanceRelation,
 )
-from claimkit.prov import dumps_prov, from_prov, loads_prov, to_prov
+from ideagraph.prov import dumps_prov, from_prov, loads_prov, to_prov
 
 
 def _link(claim_id, evidence_id, predicate, edge_id):

@@ -136,61 +136,6 @@ wheels = [
 ]
 
 [[package]]
-name = "claimkit"
-source = { editable = "." }
-dependencies = [
-    { name = "typer" },
-]
-
-[package.optional-dependencies]
-web = [
-    { name = "flask" },
-]
-
-[package.dev-dependencies]
-build = [
-    { name = "hatch" },
-]
-dev = [
-    { name = "prek" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-github-actions-annotate-failures" },
-    { name = "pytest-mock" },
-    { name = "ruff" },
-]
-docs = [
-    { name = "mkdocstrings-python" },
-    { name = "zensical" },
-]
-release = [
-    { name = "git-cliff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "flask", marker = "extra == 'web'", specifier = ">=3.0" },
-    { name = "typer", specifier = ">=0.26.8" },
-]
-provides-extras = ["web"]
-
-[package.metadata.requires-dev]
-build = [{ name = "hatch", specifier = ">=1.17.1" }]
-dev = [
-    { name = "prek", specifier = ">=0.4.10" },
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "pytest-cov", specifier = ">=7.1.0" },
-    { name = "pytest-github-actions-annotate-failures", specifier = ">=0.4.2" },
-    { name = "pytest-mock", specifier = ">=3.15.1" },
-    { name = "ruff", specifier = ">=0.15.22" },
-]
-docs = [
-    { name = "mkdocstrings-python", specifier = ">=2.0.5" },
-    { name = "zensical", specifier = ">=0.0.50" },
-]
-release = [{ name = "git-cliff", specifier = ">=2.13.1" }]
-
-[[package]]
 name = "click"
 version = "8.4.2"
 source = { registry = "https://pypi.org/simple" }
@@ -512,6 +457,61 @@ sdist = { url = "https://files.pythonhosted.org/packages/3a/51/1947bd81d75af87e3
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6e/aa/8caf6a0a3e62863cbb9dab27135660acba46903b703e224f14f447e57934/hyperlink-21.0.0-py2.py3-none-any.whl", hash = "sha256:e6b14c37ecb73e89c77d78cdb4c2cc8f3fb59a885c5b3f819ff4ed80f25af1b4", size = 74638, upload-time = "2021-01-08T05:51:22.906Z" },
 ]
+
+[[package]]
+name = "ideagraph"
+source = { editable = "." }
+dependencies = [
+    { name = "typer" },
+]
+
+[package.optional-dependencies]
+web = [
+    { name = "flask" },
+]
+
+[package.dev-dependencies]
+build = [
+    { name = "hatch" },
+]
+dev = [
+    { name = "prek" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-github-actions-annotate-failures" },
+    { name = "pytest-mock" },
+    { name = "ruff" },
+]
+docs = [
+    { name = "mkdocstrings-python" },
+    { name = "zensical" },
+]
+release = [
+    { name = "git-cliff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "flask", marker = "extra == 'web'", specifier = ">=3.0" },
+    { name = "typer", specifier = ">=0.26.8" },
+]
+provides-extras = ["web"]
+
+[package.metadata.requires-dev]
+build = [{ name = "hatch", specifier = ">=1.17.1" }]
+dev = [
+    { name = "prek", specifier = ">=0.4.10" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "pytest-cov", specifier = ">=7.1.0" },
+    { name = "pytest-github-actions-annotate-failures", specifier = ">=0.4.2" },
+    { name = "pytest-mock", specifier = ">=3.15.1" },
+    { name = "ruff", specifier = ">=0.15.22" },
+]
+docs = [
+    { name = "mkdocstrings-python", specifier = ">=2.0.5" },
+    { name = "zensical", specifier = ">=0.0.50" },
+]
+release = [{ name = "git-cliff", specifier = ">=2.13.1" }]
 
 [[package]]
 name = "idna"

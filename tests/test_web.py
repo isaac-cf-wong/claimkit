@@ -1,14 +1,14 @@
-"""Tests for the provenance web UI (``claimkit serve`` / claimkit.web)."""
+"""Tests for the provenance web UI (``ideagraph serve`` / ideagraph.web)."""
 
 from __future__ import annotations
 
 import pytest
 from typer.testing import CliRunner
 
-from claimkit import Claim, Evidence, EvidenceKind, NodeType, ProvenanceGraph, ProvenancePredicate, ProvenanceRelation
-from claimkit.cli.main import app
-from claimkit.persistence import save_graph
-from claimkit.web import build_payload
+from ideagraph import Claim, Evidence, EvidenceKind, NodeType, ProvenanceGraph, ProvenancePredicate, ProvenanceRelation
+from ideagraph.cli.main import app
+from ideagraph.persistence import save_graph
+from ideagraph.web import build_payload
 
 runner = CliRunner()
 
@@ -68,7 +68,7 @@ def test_build_payload_detects_stale(tmp_path):
     """
     artefact = tmp_path / "fig.npz"
     artefact.write_bytes(b"original")
-    from claimkit import hash_file
+    from ideagraph import hash_file
 
     path = _graph_file(tmp_path, artefact_digest=hash_file(artefact), artefact_name="fig.npz")
     assert build_payload(path)["summary"].get("stale") is None  # matches on disk
@@ -86,14 +86,14 @@ def test_flask_app_serves_index_and_api(tmp_path):
 
     """
     pytest.importorskip("flask")
-    from claimkit.web import create_app
+    from ideagraph.web import create_app
 
     path = _graph_file(tmp_path)
     client = create_app(path).test_client()
 
     index = client.get("/")
     assert index.status_code == 200
-    assert b"claimkit provenance" in index.data
+    assert b"ideagraph provenance" in index.data
 
     api = client.get("/api/graph")
     assert api.status_code == 200
@@ -110,7 +110,7 @@ def test_flask_app_serves_vendored_vis_network(tmp_path):
 
     """
     pytest.importorskip("flask")
-    from claimkit.web import create_app
+    from ideagraph.web import create_app
 
     client = create_app(_graph_file(tmp_path)).test_client()
     index = client.get("/")
@@ -139,7 +139,7 @@ def test_serve_missing_file(tmp_path):
 
 def test_render_document_latex_and_markdown():
     r"""render_document turns \prov / prov: marks into data-id spans."""
-    from claimkit.web.document import render_document
+    from ideagraph.web.document import render_document
 
     tex, ids = render_document(r"The bias is \prov{far-untrustworthy}{3--5 decades} here.", "latex")
     assert ids == ["far-untrustworthy"]
@@ -158,8 +158,8 @@ def test_build_doc_payload_resolves_and_flags_dangling(tmp_path):
         tmp_path: Pytest temporary directory fixture.
 
     """
-    from claimkit.web import build_payload
-    from claimkit.web.app import build_doc_payload
+    from ideagraph.web import build_payload
+    from ideagraph.web.app import build_doc_payload
 
     g = ProvenanceGraph()
     g.add_claim(Claim(statement="known finding", id="c1"))
@@ -181,10 +181,10 @@ def test_build_doc_payload_flags_statement_drift(tmp_path):
         tmp_path: Pytest temporary directory fixture.
 
     """
-    from claimkit import Statement
-    from claimkit.web import build_payload
-    from claimkit.web.app import build_doc_payload
-    from claimkit.web.document import text_digest
+    from ideagraph import Statement
+    from ideagraph.web import build_payload
+    from ideagraph.web.app import build_doc_payload
+    from ideagraph.web.document import text_digest
 
     g = ProvenanceGraph()
     g.add_statement(Statement(statement="captured", id="c1", source_digest=text_digest("original wording")))
@@ -211,7 +211,7 @@ def test_doc_routes(tmp_path):
 
     """
     pytest.importorskip("flask")
-    from claimkit.web import create_app
+    from ideagraph.web import create_app
 
     g = ProvenanceGraph()
     g.add_claim(Claim(statement="known finding", id="c1"))

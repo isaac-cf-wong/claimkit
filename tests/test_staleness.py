@@ -1,10 +1,10 @@
-"""Tests for :mod:`claimkit.core.staleness`."""
+"""Tests for :mod:`ideagraph.core.staleness`."""
 
 from __future__ import annotations
 
 import hashlib
 
-from claimkit.core import (
+from ideagraph.core import (
     Claim,
     ClaimStatus,
     Evidence,
