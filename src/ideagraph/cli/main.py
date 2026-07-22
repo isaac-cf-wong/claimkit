@@ -103,6 +103,7 @@ def register_commands() -> None:
     from ideagraph.cli.mark import mark_command
     from ideagraph.cli.neighbors import neighbors_command
     from ideagraph.cli.path import path_command
+    from ideagraph.cli.remote import remote_app
     from ideagraph.cli.report import report_command
     from ideagraph.cli.serve import serve_command
     from ideagraph.cli.set_article import set_article_command
@@ -133,6 +134,7 @@ def register_commands() -> None:
     app.command(name="export")(export_command)
     app.command(name="import")(import_command)
     app.command(name="serve")(serve_command)
+    app.add_typer(remote_app, name="remote")
 
 
 register_commands()
