@@ -11,6 +11,17 @@
     <div class="shell">
       <header class="topbar">
         <a class="brand" href="{% url 'web:index' %}">ideagraph</a>
+        <nav class="nav">
+          {% if user.is_authenticated %}
+            <a href="{% url 'web:graphs' %}"{% if page == 'graphs' %} class="active"{% endif %}>My graphs</a>
+            <span class="who">{{ user.get_username }}</span>
+            <form method="post" action="{% url 'logout' %}" class="logout">
+              {% csrf_token %}<button type="submit">Sign out</button>
+            </form>
+          {% else %}
+            <a href="{% url 'login' %}">Sign in</a>
+          {% endif %}
+        </nav>
       </header>
       {% if messages %}
         <div class="message-stack" aria-live="polite">

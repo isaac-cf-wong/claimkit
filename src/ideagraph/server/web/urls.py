@@ -10,4 +10,5 @@ app_name = "web"
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("graphs/", views.graphs_list, name="graphs"),
 ]

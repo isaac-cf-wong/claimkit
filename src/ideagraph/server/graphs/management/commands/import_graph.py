@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 
 from ideagraph.persistence import load_graph
@@ -27,18 +28,26 @@ class Command(BaseCommand):
         """
         parser.add_argument("slug", help="Slug to store the graph under (replaces any existing).")
         parser.add_argument("path", help="Path to a graph JSON file produced by ideagraph.")
+        parser.add_argument("--owner", help="Username to record as the graph's owner.")
 
     def handle(self, *args: object, **options: object) -> None:
         """Run the import.
 
         Args:
             *args: Unused positional arguments.
-            **options: Parsed command options (``slug``, ``path``).
+            **options: Parsed command options (``slug``, ``path``, ``owner``).
         """
         path = Path(str(options["path"]))
         if not path.exists():
             raise CommandError(f"No such file: {path}")
-        graph = graph_to_orm(load_graph(path), slug=str(options["slug"]))
+        owner = None
+        if options.get("owner"):
+            user_model = get_user_model()
+            try:
+                owner = user_model.objects.get(username=options["owner"])
+            except user_model.DoesNotExist as exc:
+                raise CommandError(f"No such user: {options['owner']}") from exc
+        graph = graph_to_orm(load_graph(path), slug=str(options["slug"]), owner=owner)
         self.stdout.write(
             self.style.SUCCESS(
                 f"Imported {graph.nodes.count()} node(s) and {graph.edges.count()} edge(s) into '{graph.slug}'."
