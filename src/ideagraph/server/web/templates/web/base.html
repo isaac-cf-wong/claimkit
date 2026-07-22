@@ -1,0 +1,25 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}ideagraph{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'web/css/app.css' %}" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="{% url 'web:index' %}">ideagraph</a>
+      </header>
+      {% if messages %}
+        <div class="message-stack" aria-live="polite">
+          {% for message in messages %}
+            <div class="app-message {{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <main id="main" class="main">{% block content %}{% endblock %}</main>
+    </div>
+  </body>
+</html>

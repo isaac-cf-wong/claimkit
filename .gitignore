@@ -138,3 +138,6 @@ node_modules/
 
 # Local-only design discussion (kept out of the repo)
 docs/design/
+
+# Django collected static files
+/staticfiles/

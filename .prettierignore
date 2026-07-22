@@ -1,2 +1,5 @@
 # Vendored third-party libraries (offline copies) — do not reformat.
 src/ideagraph/web/static/
+
+# Django templates: prettier's HTML formatter mangles {% %} template tags.
+src/ideagraph/server/web/templates/
