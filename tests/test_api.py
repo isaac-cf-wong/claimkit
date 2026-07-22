@@ -121,9 +121,12 @@ def test_read_collaborator_cannot_write(owner):
     )
     client = APIClient()
     client.force_authenticate(reader)
-    assert client.get("/api/graphs/mine/").status_code == 200
-    assert client.put("/api/graphs/mine/", {"content": _sample().to_dict()}, format="json").status_code == 403
-    assert client.delete("/api/graphs/mine/").status_code == 403
+    get_resp = client.get("/api/graphs/mine/")
+    put_resp = client.put("/api/graphs/mine/", {"content": _sample().to_dict()}, format="json")
+    delete_resp = client.delete("/api/graphs/mine/")
+    assert get_resp.status_code == 200
+    assert put_resp.status_code == 403
+    assert delete_resp.status_code == 403
 
 
 def test_write_collaborator_can_replace(owner):
