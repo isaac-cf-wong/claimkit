@@ -1,0 +1,26 @@
+{% extends "web/base.html" %}
+{% block title %}My graphs · ideagraph{% endblock %}
+{% block content %}
+  <section class="panel">
+    <h1>My graphs</h1>
+    {% if rows %}
+      <table class="table">
+        <thead>
+          <tr><th>Title</th><th>Slug</th><th>Owner</th><th>Your role</th></tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            <tr>
+              <td>{{ row.graph.title|default:row.graph.slug }}</td>
+              <td><code>{{ row.graph.slug }}</code></td>
+              <td>{{ row.graph.owner.get_username|default:"—" }}</td>
+              <td><span class="role role-{{ row.role }}">{{ row.role }}</span></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">No graphs yet. Import one with <code>manage.py import_graph &lt;slug&gt; &lt;file.json&gt; --owner {{ user.get_username }}</code>.</p>
+    {% endif %}
+  </section>
+{% endblock %}

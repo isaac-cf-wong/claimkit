@@ -82,3 +82,98 @@ body {
     background: var(--card);
     margin-bottom: 0.5rem;
 }
+
+.app-message.error {
+    border-color: #d9b1b1;
+    background: #fbeaea;
+}
+
+.nav {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.95rem;
+}
+
+.nav a {
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.nav a.active,
+.nav a:hover {
+    color: var(--accent);
+}
+
+.nav .who {
+    color: var(--muted);
+}
+
+.nav .logout {
+    margin: 0;
+}
+
+.nav .logout button,
+.form button {
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: var(--accent);
+    color: #fff;
+    border-radius: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    font: inherit;
+}
+
+.panel {
+    max-width: 60rem;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+}
+
+.panel-narrow {
+    max-width: 26rem;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.table th,
+.table td {
+    text-align: left;
+    padding: 0.55rem 0.6rem;
+    border-bottom: 1px solid var(--line);
+}
+
+.role {
+    font-size: 0.8rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+}
+
+.role-owner {
+    background: #e6f0ea;
+    border-color: #bcd8c7;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin-top: 1rem;
+}
+
+.form input {
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 0.4rem;
+    font: inherit;
+}

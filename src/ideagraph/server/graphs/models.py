@@ -8,6 +8,7 @@ display. Conversion to/from the in-memory
 
 from __future__ import annotations
 
+from django.conf import settings
 from django.db import models
 
 
@@ -18,6 +19,13 @@ class Graph(models.Model):
     article_id = models.CharField(max_length=200, blank=True, default="")
     title = models.CharField(max_length=500, blank=True, default="")
     metadata = models.JSONField(default=dict, blank=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="owned_graphs",
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -27,6 +35,33 @@ class Graph(models.Model):
     def __str__(self) -> str:
         """Return the graph's title or slug."""
         return self.title or self.slug
+
+
+class GraphCollaborator(models.Model):
+    """A user granted read or write access to a graph they do not own."""
+
+    class Role(models.TextChoices):
+        READ = "read", "Read"
+        WRITE = "write", "Write"
+
+    graph = models.ForeignKey(Graph, on_delete=models.CASCADE, related_name="collaborators")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="graph_memberships",
+    )
+    role = models.CharField(max_length=8, choices=Role.choices, default=Role.READ)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["graph", "user"]
+        constraints = [
+            models.UniqueConstraint(fields=["graph", "user"], name="uniq_collaborator_per_graph"),
+        ]
+
+    def __str__(self) -> str:
+        """Return a short label for the collaborator grant."""
+        return f"{self.user} ({self.role}) on {self.graph}"
 
 
 class Node(models.Model):

@@ -91,12 +91,13 @@ def _edge_rows(graph: Graph, sections: dict[str, Any]) -> Iterable[Edge]:
 
 
 @transaction.atomic
-def graph_to_orm(pg: ProvenanceGraph, *, slug: str) -> Graph:
+def graph_to_orm(pg: ProvenanceGraph, *, slug: str, owner: object = None) -> Graph:
     """Persist a ProvenanceGraph as a Graph row (replacing any existing one).
 
     Args:
         pg: The in-memory graph to store.
         slug: The stable URL/slug identifier for the stored graph.
+        owner: Optional user to record as the graph's owner.
 
     Returns:
         The saved Graph row.
@@ -109,6 +110,7 @@ def graph_to_orm(pg: ProvenanceGraph, *, slug: str) -> Graph:
         article_id=pg.article_id or "",
         title=str(pg.metadata.get("title", "")) if pg.metadata else "",
         metadata=dict(pg.metadata),
+        owner=owner,
     )
     Node.objects.bulk_create(list(_node_rows(graph, sections)))
     Edge.objects.bulk_create(list(_edge_rows(graph, sections)))
