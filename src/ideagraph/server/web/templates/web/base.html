@@ -14,6 +14,7 @@
         <nav class="nav">
           {% if user.is_authenticated %}
             <a href="{% url 'web:graphs' %}"{% if page == 'graphs' %} class="active"{% endif %}>My graphs</a>
+            <a href="{% url 'web:library' %}"{% if page == 'library' %} class="active"{% endif %}>Library</a>
             <span class="who">{{ user.get_username }}</span>
             <form method="post" action="{% url 'logout' %}" class="logout">
               {% csrf_token %}<button type="submit">Sign out</button>
