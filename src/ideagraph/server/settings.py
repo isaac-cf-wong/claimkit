@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "ideagraph.server.graphs",
+    "ideagraph.server.api",
     "ideagraph.server.web",
 ]
 
