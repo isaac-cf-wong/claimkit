@@ -11,8 +11,7 @@ import importlib.util
 
 import pytest
 
-from ideagraph import Library, ProvenanceGraph, Statement
-from ideagraph.persistence import save_graph
+from ideagraph import KnowledgeGraph, Library, Node, save_graph
 from ideagraph.semantic import cosine, normalize
 
 
@@ -52,10 +51,10 @@ def _library(tmp_path):
         tmp_path: Pytest temporary directory fixture.
 
     """
-    g = ProvenanceGraph(article_id="paperA")
-    g.add_statement(Statement(statement="Glitches inflate the noise background.", id="c1"))
-    g.add_statement(Statement(statement="The null stream enables self-sliding.", id="c2"))
-    g.add_statement(Statement(statement="Reported FAR values are untrustworthy.", id="c3"))
+    g = KnowledgeGraph(article_id="paperA")
+    g.add_node(Node(type="claim", id="c1", text="Glitches inflate the noise background."))
+    g.add_node(Node(type="claim", id="c2", text="The null stream enables self-sliding."))
+    g.add_node(Node(type="claim", id="c3", text="Reported FAR values are untrustworthy."))
     save_graph(g, tmp_path / "A.json")
     return tmp_path
 
@@ -75,10 +74,10 @@ def test_embed_is_incremental(tmp_path):
         assert lib.embed(emb) == 0  # nothing changed
 
         # Edit one statement's text -> reindex -> exactly one re-embed.
-        g = ProvenanceGraph(article_id="paperA")
-        g.add_statement(Statement(statement="Glitches inflate the noise background.", id="c1"))
-        g.add_statement(Statement(statement="The null stream enables self-sliding.", id="c2"))
-        g.add_statement(Statement(statement="Reported FAR values are now revised.", id="c3"))
+        g = KnowledgeGraph(article_id="paperA")
+        g.add_node(Node(type="claim", id="c1", text="Glitches inflate the noise background."))
+        g.add_node(Node(type="claim", id="c2", text="The null stream enables self-sliding."))
+        g.add_node(Node(type="claim", id="c3", text="Reported FAR values are now revised."))
         save_graph(g, root / "A.json")
         lib.index()
         assert lib.embed(emb) == 1

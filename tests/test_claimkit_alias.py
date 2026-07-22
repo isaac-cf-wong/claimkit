@@ -14,20 +14,20 @@ def test_top_level_alias_redirects_and_warns():
         assert any(issubclass(w.category, DeprecationWarning) for w in caught)
 
     # Public API mirrored onto the alias package.
-    assert claimkit.Statement.__module__.startswith("ideagraph")
-    stmt = claimkit.Statement(statement="x", id="c1")
-    assert stmt.id == "c1"
+    assert claimkit.KnowledgeGraph.__module__.startswith("ideagraph")
+    node = claimkit.Node(type="claim", id="c1", text="x")
+    assert node.id == "c1"
 
 
 def test_submodule_imports_redirect():
     """``from claimkit.x import y`` resolves to the matching ideagraph module."""
-    from claimkit.core.statement import Statement as AliasStatement
-    from claimkit.persistence import save_graph as alias_save
+    from claimkit.kg.node import Node as AliasNode
+    from claimkit.kg.persistence import save_graph as alias_save
 
-    from ideagraph.core.statement import Statement as RealStatement
-    from ideagraph.persistence import save_graph as real_save
+    from ideagraph.kg.node import Node as RealNode
+    from ideagraph.kg.persistence import save_graph as real_save
 
-    assert AliasStatement is RealStatement
+    assert AliasNode is RealNode
     assert alias_save is real_save
 
 
@@ -39,12 +39,12 @@ def test_alias_graph_roundtrips_with_real_package(tmp_path):
 
     """
     import claimkit
-    from ideagraph.persistence import load_graph
+    from ideagraph.kg.persistence import load_graph
 
-    g = claimkit.ProvenanceGraph()
-    g.add_statement(claimkit.Statement(statement="aliased", id="c1"))
+    g = claimkit.KnowledgeGraph()
+    g.add_node(claimkit.Node(type="claim", id="c1", text="aliased"))
     path = tmp_path / "g.json"
     claimkit.save_graph(g, path)
 
     reloaded = load_graph(path)  # loaded via the real package
-    assert reloaded.statements["c1"].statement == "aliased"
+    assert reloaded.nodes["c1"].text == "aliased"

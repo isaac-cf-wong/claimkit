@@ -2,14 +2,7 @@
 
 from __future__ import annotations
 
-from ideagraph import (
-    CrossReference,
-    Library,
-    ProvenanceGraph,
-    ProvenancePredicate,
-    Statement,
-)
-from ideagraph.persistence import save_graph
+from ideagraph import Edge, KnowledgeGraph, Library, Node, ProvenancePredicate, save_graph
 
 
 def _article(root, article_id, statements, cross=None):
@@ -22,11 +15,11 @@ def _article(root, article_id, statements, cross=None):
         cross: Optional iterable of (subject_id, predicate, target) triples.
 
     """
-    g = ProvenanceGraph(article_id=article_id)
+    g = KnowledgeGraph(article_id=article_id)
     for node_id, text in statements:
-        g.add_statement(Statement(statement=text, id=node_id))
-    for subject_id, predicate, target in cross or []:
-        g.add_cross_reference(CrossReference(subject_id=subject_id, predicate=predicate, target=target))
+        g.add_node(Node(type="claim", id=node_id, text=text))
+    for i, (subject_id, predicate, target) in enumerate(cross or []):
+        g.add_edge(Edge(type=str(predicate), source=subject_id, target=target, id=f"x{i}"))
     path = root / f"{article_id}.json"
     save_graph(g, path)
     return path
@@ -95,8 +88,8 @@ def test_skips_graph_without_article_id(tmp_path):
         tmp_path: Pytest temporary directory fixture.
 
     """
-    g = ProvenanceGraph()  # no article_id
-    g.add_statement(Statement(statement="orphan", id="c1"))
+    g = KnowledgeGraph()  # no article_id
+    g.add_node(Node(type="claim", id="c1", text="orphan"))
     save_graph(g, tmp_path / "orphan.json")
     with Library(tmp_path) as lib:
         result = lib.index()

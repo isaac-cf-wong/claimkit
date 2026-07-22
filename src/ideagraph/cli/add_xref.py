@@ -8,7 +8,7 @@ from typing import Annotated
 
 import typer
 
-from ideagraph.core import ProvenancePredicate
+from ideagraph.kg.profiles import ProvenancePredicate
 
 
 def add_xref_command(

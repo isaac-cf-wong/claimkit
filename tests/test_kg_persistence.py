@@ -104,40 +104,33 @@ def test_legacy_v3_document_converts():
     assert (xref.type, xref.source, xref.target) == ("builds_on", "c1", "other#c9")
 
 
-def test_legacy_file_from_old_core_loads(tmp_path):
-    """A file written by the OLD core persistence loads via the new loader.
+def test_legacy_file_on_disk_loads(tmp_path):
+    """A legacy (v3) JSON file on disk loads via the new loader.
 
     Args:
         tmp_path: Pytest temporary directory fixture.
 
     """
-    from ideagraph.core import (
-        Evidence,
-        EvidenceKind,
-        NodeType,
-        ProvenanceGraph,
-        ProvenancePredicate,
-        ProvenanceRelation,
-        Statement,
-        StatementType,
-    )
-    from ideagraph.persistence import save_graph as old_save
-
-    old = ProvenanceGraph(article_id="a")
-    old.add_statement(Statement(statement="A claim.", id="c1", type=StatementType.CLAIM))
-    old.add_evidence(Evidence(claim_id="c1", kind=EvidenceKind.DATA, reference="d.csv", id="e1"))
-    old.add_relation(
-        ProvenanceRelation(
-            subject_type=NodeType.CLAIM,
-            subject_id="c1",
-            predicate=ProvenancePredicate.SUPPORTED_BY,
-            object_type=NodeType.EVIDENCE,
-            object_id="e1",
-            id="r1",
-        )
-    )
+    legacy_doc = {
+        "schema_version": 3,
+        "graph": {
+            "article_id": "a",
+            "statements": [{"id": "c1", "statement": "A claim.", "type": "claim", "status": "unresolved"}],
+            "evidence": [{"id": "e1", "kind": "data", "reference": "d.csv", "relation": "supports"}],
+            "relations": [
+                {
+                    "id": "r1",
+                    "subject_type": "claim",
+                    "subject_id": "c1",
+                    "predicate": "supported_by",
+                    "object_type": "evidence",
+                    "object_id": "e1",
+                }
+            ],
+        },
+    }
     path = tmp_path / "legacy.json"
-    old_save(old, path)
+    path.write_text(json.dumps(legacy_doc), encoding="utf-8")
 
     g = load_graph(path)
     assert g.nodes["c1"].type == "claim"

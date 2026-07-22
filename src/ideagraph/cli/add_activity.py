@@ -8,7 +8,7 @@ from typing import Annotated
 
 import typer
 
-from ideagraph.core import ActivityKind
+from ideagraph.kg.profiles import ActivityKind
 
 
 def add_activity_command(

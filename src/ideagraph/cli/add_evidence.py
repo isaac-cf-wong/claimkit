@@ -8,7 +8,7 @@ from typing import Annotated
 
 import typer
 
-from ideagraph.core import EvidenceKind, EvidenceRelation
+from ideagraph.kg.profiles import EvidenceKind, EvidenceRelation
 
 #: How an evidence relation maps to the edge type that links the claim to the
 #: evidence.
