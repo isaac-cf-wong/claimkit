@@ -36,9 +36,9 @@ dev = [
   "pytest-cov>=7.1.0",
   "pytest-mock>=3.15.1",
   "pytest>=9.1.1",
-  "pytest-django>=4.11",
-  "django>=5.2,<6.0",
-  "djangorestframework>=3.15",
+  "pytest-django>=4.12.0",
+  "django>=5.2.16,<6.0",
+  "djangorestframework>=3.17.1",
 ]
 docs = ["zensical>=0.0.51", "mkdocstrings-python>=2.0.5"]
 build = ["hatch>=1.17.1"]
