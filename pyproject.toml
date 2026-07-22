@@ -21,8 +21,9 @@ dynamic = ["version"]
 dependencies = ["typer>=0.26.8"]
 
 [project.optional-dependencies]
-# `pip install ideagraph[web]` enables the `ideagraph serve` provenance web UI.
-web = ["flask>=3.0"]
+# `pip install ideagraph[web]` enables the Django web interface (and, until it
+# is retired, the legacy Flask `ideagraph serve` UI).
+web = ["flask>=3.0", "django>=5.2,<6.0", "djangorestframework>=3.15"]
 # `pip install ideagraph[semantic]` enables `ideagraph find --semantic` (the
 # default sentence-transformer embedder). Any custom embedder works without it.
 semantic = ["sentence-transformers>=3.0"]
@@ -35,6 +36,9 @@ dev = [
   "pytest-cov>=7.1.0",
   "pytest-mock>=3.15.1",
   "pytest>=9.1.1",
+  "pytest-django>=4.11",
+  "django>=5.2,<6.0",
+  "djangorestframework>=3.15",
 ]
 docs = ["zensical>=0.0.51", "mkdocstrings-python>=2.0.5"]
 build = ["hatch>=1.17.1"]
@@ -79,6 +83,7 @@ addopts = "--cov-report xml:coverage.xml --cov src --cov-append -m 'not integrat
 pythonpath = ["src"]
 testpaths = "tests"
 junit_family = "xunit2"
+DJANGO_SETTINGS_MODULE = "ideagraph.server.settings"
 markers = [
   "integration: marks as integration test",
   "notebooks: marks as notebook test",
@@ -166,3 +171,7 @@ convention = "google"
 "src/ideagraph/cli/*" = ["PLR0913"]
 # PLR0913: Typer maps each CLI option to a function parameter, so command
 # functions legitimately take more than five arguments.
+"manage.py" = ["PLC0415"]
+# PLC0415: Django's manage.py imports inside main() by design (import guard).
+"src/ideagraph/server/settings.py" = ["S105"]
+# S105: the development secret-key sentinel is compared, not a real secret.
