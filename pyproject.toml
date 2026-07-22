@@ -175,3 +175,8 @@ convention = "google"
 # PLC0415: Django's manage.py imports inside main() by design (import guard).
 "src/ideagraph/server/settings.py" = ["S105"]
 # S105: the development secret-key sentinel is compared, not a real secret.
+"src/ideagraph/server/**/migrations/*" = ["D100", "D101", "D104", "RUF012"]
+# Django-generated migrations: no module/class docstrings; Meta uses lists.
+"src/ideagraph/server/**/models.py" = ["RUF012", "D106"]
+# RUF012: Django Meta options are lists by convention (not ClassVar-annotated).
+# D106: nested Meta / TextChoices classes are self-explanatory.
