@@ -181,3 +181,6 @@ convention = "google"
 "src/ideagraph/server/**/models.py" = ["RUF012", "D106"]
 # RUF012: Django Meta options are lists by convention (not ClassVar-annotated).
 # D106: nested Meta / TextChoices classes are self-explanatory.
+"src/ideagraph/server/api/*" = ["RUF012", "D106"]
+# RUF012: DRF viewset/serializer class attributes are lists by convention.
+# D106: serializer Meta classes are self-explanatory.
