@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 
 from ideagraph.server.graphs.models import Graph
-from ideagraph.server.graphs.payload import graph_payload
+from ideagraph.server.graphs.payload import graph_payload, library_payload
 from ideagraph.server.graphs.permissions import can_view, visible_graphs
 from ideagraph.version import __version__
 
@@ -117,3 +117,31 @@ def graph_data(request: HttpRequest, slug: str) -> JsonResponse:
     """
     graph = _graph_for_view(request, slug)
     return JsonResponse(graph_payload(graph))
+
+
+@login_required
+def library_view(request: HttpRequest) -> HttpResponse:
+    """Render the cross-article idea graph over the user's visible graphs.
+
+    Args:
+        request: The incoming request.
+
+    Returns:
+        The rendered library page.
+
+    """
+    return render(request, "web/library.html", {"page": "library"})
+
+
+@login_required
+def library_data(request: HttpRequest) -> JsonResponse:
+    """Return the cross-article idea-graph payload as JSON.
+
+    Args:
+        request: The incoming request.
+
+    Returns:
+        The aggregated library payload over the user's visible graphs.
+
+    """
+    return JsonResponse(library_payload(visible_graphs(request.user)))

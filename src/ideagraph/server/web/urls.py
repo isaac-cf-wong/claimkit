@@ -13,4 +13,6 @@ urlpatterns = [
     path("graphs/", views.graphs_list, name="graphs"),
     path("graphs/<slug:slug>/", views.graph_detail, name="graph-detail"),
     path("graphs/<slug:slug>/data/", views.graph_data, name="graph-data"),
+    path("library/", views.library_view, name="library"),
+    path("library/data/", views.library_data, name="library-data"),
 ]

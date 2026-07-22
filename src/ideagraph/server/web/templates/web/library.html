@@ -1,0 +1,22 @@
+{% extends "web/base.html" %}
+{% load static %}
+{% block title %}Library · ideagraph{% endblock %}
+{% block content %}
+  <section class="graph-view" data-library-url="{% url 'web:library-data' %}">
+    <div class="graph-head">
+      <div>
+        <h1>Library</h1>
+        <div class="muted">Cross-article idea graph — nodes coloured by article; dashed orange = cross-reference, red = dangling.</div>
+      </div>
+    </div>
+    <div class="legend" id="libarticles"></div>
+    <div class="graph-body">
+      <div id="net" class="net"></div>
+      <aside id="panel" class="node-panel">
+        <span class="hint">Click a node to inspect it.</span>
+      </aside>
+    </div>
+  </section>
+  <script src="{% static 'web/vendor/vis-network.min.js' %}"></script>
+  <script src="{% static 'web/js/library.js' %}"></script>
+{% endblock %}
