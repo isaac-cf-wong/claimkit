@@ -1,32 +1,143 @@
-"""The built-in ``research`` profile.
+"""The built-in ``research`` profile and its vocabulary.
 
-Reproduces the scientific-provenance vocabulary of the old typed core as a
+Reproduces the scientific-provenance vocabulary of the original ideagraph as a
 knowledge-graph profile: statement node types (claim, finding, …) plus evidence
 and activity nodes, and the provenance / discourse / cross-article edge types
-with their endpoint constraints. This is what makes the generic engine behave
-like the original ideagraph when the ``research`` profile is active.
+with their endpoint constraints.
+
+The vocabulary enums here are the single source of truth: they drive both the
+profile's rules and the CLI option choices, and the string-set constants
+(``STATEMENT_TYPES``, ``ASSERTION_TYPES``, …) are derived from them.
 """
 
 from __future__ import annotations
 
+import enum
+
 from ideagraph.kg.profile import EdgeRule, NodeRule, Profile, register_profile
 
-#: Statement node types (rhetorical roles).
-STATEMENT_TYPES = ("claim", "finding", "background", "method", "definition", "motivation", "result", "other")
+
+class StatementType(enum.StrEnum):
+    """The rhetorical role a statement node plays."""
+
+    CLAIM = "claim"
+    FINDING = "finding"
+    BACKGROUND = "background"
+    METHOD = "method"
+    DEFINITION = "definition"
+    MOTIVATION = "motivation"
+    RESULT = "result"
+    OTHER = "other"
+
+
+class StatementStatus(enum.StrEnum):
+    """Validation status of an assertion statement."""
+
+    UNRESOLVED = "unresolved"
+    VALID = "valid"
+    STALE = "stale"
+    INVALID = "invalid"
+    NEEDS_REVIEW = "needs_review"
+
+
+class EvidenceKind(enum.StrEnum):
+    """The type of artefact a piece of evidence points at."""
+
+    CODE = "code"
+    DATA = "data"
+    WORKFLOW = "workflow"
+    ENVIRONMENT = "environment"
+    INSTRUMENT = "instrument"
+    FIGURE = "figure"
+    TABLE = "table"
+    LITERATURE = "literature"
+    HUMAN_REVIEW = "human_review"
+    OTHER = "other"
+
+
+class EvidenceRelation(enum.StrEnum):
+    """How a piece of evidence bears on a claim."""
+
+    SUPPORTS = "supports"
+    REFUTES = "refutes"
+    CONTEXTUAL = "contextual"
+
+
+class ActivityKind(enum.StrEnum):
+    """The type of process an activity represents."""
+
+    COMPUTATION = "computation"
+    MEASUREMENT = "measurement"
+    ANALYSIS = "analysis"
+    REVIEW = "review"
+    IMPORT = "import"
+    OTHER = "other"
+
+
+class NodeType(enum.StrEnum):
+    """The category of a node for relation-endpoint reasoning."""
+
+    CLAIM = "claim"
+    EVIDENCE = "evidence"
+    ACTIVITY = "activity"
+    ARTEFACT = "artefact"
+    AGENT = "agent"
+
+
+class ProvenancePredicate(enum.StrEnum):
+    """The vocabulary of edge types in the research profile."""
+
+    SUPPORTED_BY = "supported_by"
+    REFUTED_BY = "refuted_by"
+    GENERATED_BY = "generated_by"
+    USED = "used"
+    DERIVED_FROM = "derived_from"
+    ATTRIBUTED_TO = "attributed_to"
+    REVIEWED_BY = "reviewed_by"
+    RELATES_TO = "relates_to"
+    ELABORATES = "elaborates"
+    CONTRASTS = "contrasts"
+    DEPENDS_ON = "depends_on"
+    CITES = "cites"
+    MOTIVATES = "motivates"
+    BUILDS_ON = "builds_on"
+    EXTENDS = "extends"
+    CONTRADICTS = "contradicts"
+    SAME_AS = "same_as"
+
+
+# ClaimStatus is a backward-compatible alias of StatementStatus.
+ClaimStatus = StatementStatus
+
+#: Statement node types (rhetorical roles), as plain strings.
+STATEMENT_TYPES = tuple(t.value for t in StatementType)
 
 #: Statement types that assert something and therefore require support.
-ASSERTION_TYPES = frozenset({"claim", "finding", "result"})
-
-#: Non-statement node types.
-_EVIDENCE = "evidence"
-_ACTIVITY = "activity"
+ASSERTION_TYPES = frozenset({StatementType.CLAIM.value, StatementType.FINDING.value, StatementType.RESULT.value})
 
 #: Discourse edge types (statement -> statement rhetorical links).
-DISCOURSE_TYPES = frozenset({"elaborates", "contrasts", "depends_on", "cites", "motivates"})
+DISCOURSE_TYPES = frozenset(
+    {
+        ProvenancePredicate.ELABORATES.value,
+        ProvenancePredicate.CONTRASTS.value,
+        ProvenancePredicate.DEPENDS_ON.value,
+        ProvenancePredicate.CITES.value,
+        ProvenancePredicate.MOTIVATES.value,
+    }
+)
 
 #: Cross-article edge types (this article -> another).
-CROSS_ARTICLE_TYPES = frozenset({"builds_on", "extends", "contradicts", "same_as"})
+CROSS_ARTICLE_TYPES = frozenset(
+    {
+        ProvenancePredicate.BUILDS_ON.value,
+        ProvenancePredicate.EXTENDS.value,
+        ProvenancePredicate.CONTRADICTS.value,
+        ProvenancePredicate.SAME_AS.value,
+    }
+)
 
+_EVIDENCE = "evidence"
+_ACTIVITY = "activity"
 _STATEMENT_SET = frozenset(STATEMENT_TYPES)
 
 
@@ -54,8 +165,6 @@ def _build_profile() -> Profile:
     for t in DISCOURSE_TYPES:
         edge_types[t] = EdgeRule(t, source_types=_STATEMENT_SET, target_types=_STATEMENT_SET)
     for t in CROSS_ARTICLE_TYPES:
-        # Cross-article edges point at a global id in another graph; the target
-        # type cannot be checked locally, so it is left unconstrained.
         edge_types[t] = EdgeRule(t, source_types=_STATEMENT_SET)
     return Profile(name="research", node_types=node_types, edge_types=edge_types)
 

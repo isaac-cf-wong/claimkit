@@ -8,7 +8,7 @@ from typing import Annotated
 
 import typer
 
-from ideagraph.core import ClaimStatus
+from ideagraph.kg.profiles import ClaimStatus
 
 
 def mark_command(

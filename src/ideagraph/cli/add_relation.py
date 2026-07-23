@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Annotated
 
 import typer
 
-from ideagraph.core import NodeType, ProvenancePredicate
+from ideagraph.kg.profiles import NodeType, ProvenancePredicate
 
 if TYPE_CHECKING:
     from ideagraph.kg import KnowledgeGraph

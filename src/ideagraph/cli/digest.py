@@ -25,7 +25,7 @@ def digest_command(
         file: Path to the artefact to hash.
         algorithm: The hash algorithm to use.
     """
-    from ideagraph.core import hash_file
+    from ideagraph.core.staleness import hash_file
 
     if not file.exists():
         typer.echo(f"No such file: {file}", err=True)

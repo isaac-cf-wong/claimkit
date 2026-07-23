@@ -8,7 +8,7 @@ from typing import Annotated
 
 import typer
 
-from ideagraph.core import StatementStatus, StatementType
+from ideagraph.kg.profiles import StatementStatus, StatementType
 
 
 def add_statement_command(
