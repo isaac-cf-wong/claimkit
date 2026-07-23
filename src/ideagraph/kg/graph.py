@@ -127,26 +127,6 @@ class KnowledgeGraph:
         """
         return [n for n in self.nodes.values() if n.type == node_type]
 
-    def subgraph(self, seeds: set[str], *, hops: int = 1, article_id: str | None = None) -> KnowledgeGraph:
-        """Return the induced subgraph around ``seeds`` as a new graph.
-
-        Thin convenience wrapper over
-        :func:`ideagraph.kg.extract.extract_subgraph`; see it for the full
-        contract (cross-article edges, provenance stamping).
-
-        Args:
-            seeds: Seed node ids (ids absent from this graph are ignored).
-            hops: Number of edge hops to expand from the seeds.
-            article_id: ``article_id`` for the new graph (defaults to ``None``).
-
-        Returns:
-            A new :class:`KnowledgeGraph` holding the induced subgraph.
-
-        """
-        from ideagraph.kg.extract import extract_subgraph  # noqa: PLC0415
-
-        return extract_subgraph(self, seeds, hops=hops, article_id=article_id)
-
     def global_id(self, node_id: str) -> str:
         """Return the global address ``article_id#node_id`` for a local node.
 

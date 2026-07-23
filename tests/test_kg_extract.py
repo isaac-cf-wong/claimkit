@@ -80,11 +80,3 @@ def test_extract_is_independent_of_source():
     assert "mutated" not in g.nodes["a"].properties
     assert g.nodes["a"].tags == []
     assert sub.article_id == "dest"
-
-
-def test_subgraph_method_delegates():
-    """KnowledgeGraph.subgraph mirrors extract_subgraph."""
-    g = _chain()
-    sub = g.subgraph({"a"}, hops=1, article_id="dest")
-    assert set(sub.nodes) == {"a", "b"}
-    assert sub.article_id == "dest"
