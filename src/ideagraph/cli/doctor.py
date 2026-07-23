@@ -4,9 +4,85 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 import typer
+
+if TYPE_CHECKING:
+    from ideagraph.kg.graph import KnowledgeGraph
+    from ideagraph.kg.profile import Diagnostic
+
+
+def _library_context(library: Path) -> tuple[set[str], set[str], dict[str, object]]:
+    """Index a library root and load its article graphs.
+
+    Args:
+        library: Library root directory.
+
+    Returns:
+        A tuple of (known article ids, known statement gids, article_id -> graph).
+    """
+    from ideagraph.kg.persistence import load_graph
+    from ideagraph.library import Library
+
+    with Library(library) as lib:
+        lib.index()
+        known_articles = lib.article_ids()
+        library_gids = lib.statement_gids()
+    origins: dict[str, object] = {}
+    for candidate in library.rglob("*.json"):
+        try:
+            loaded = load_graph(candidate)
+        except (ValueError, KeyError, OSError, UnicodeDecodeError):
+            continue
+        if loaded.article_id is not None:
+            origins[loaded.article_id] = loaded
+    return known_articles, library_gids, origins
+
+
+def _library_diagnostics(
+    graph: KnowledgeGraph, known_articles: set[str], library_gids: set[str], origins: dict[str, object]
+) -> list[Diagnostic]:
+    """Compute library-level diagnostics: dangling xref targets and stale imports.
+
+    Args:
+        graph: The graph under inspection.
+        known_articles: Article ids present in the library.
+        library_gids: Statement global ids present in the library.
+        origins: Map of article_id to its current graph.
+
+    Returns:
+        The library-level diagnostics.
+    """
+    from ideagraph.core.identity import is_global_id, parse_global_id
+    from ideagraph.kg.extract import find_stale_imports
+    from ideagraph.kg.profile import Diagnostic
+
+    out: list[Diagnostic] = []
+    if graph.article_id is not None:
+        for edge in graph.edges.values():
+            if not is_global_id(edge.target):
+                continue
+            target_article, _ = parse_global_id(edge.target)
+            if target_article in known_articles and edge.target not in library_gids:
+                out.append(
+                    Diagnostic(
+                        "error",
+                        "xref-dangling-target",
+                        f"cross-reference target {edge.target!r} does not exist in the library",
+                        edge.id,
+                    )
+                )
+    for stale in find_stale_imports(graph, origins.get):
+        out.append(
+            Diagnostic(
+                "warning",
+                "stale-import",
+                f"imported node {stale.node_id!r} is {stale.reason} vs its origin {stale.source_gid!r}",
+                stale.node_id,
+            )
+        )
+    return out
 
 
 def doctor_command(
@@ -30,15 +106,15 @@ def doctor_command(
 ) -> None:
     """Check a graph's integrity and report problems.
 
-    Runs the ``research`` profile's structural validation plus research-level
-    checks: cross-references from missing statements, malformed global targets,
+    Runs the chosen profile's structural validation plus research-level checks:
+    cross-references from missing statements, malformed global targets,
     self-references into missing local nodes, intra-article edges pointing at
     absent nodes, and outward links from a graph with no ``article_id``. Exits
     non-zero if any error is found (or any warning, with ``--strict``).
 
     With ``--library`` the whole library is indexed first, so cross-article
-    targets are resolved: a reference to another article that is not present, or
-    to a node that does not exist there, is reported.
+    targets are resolved and imported nodes whose cache origin has drifted since
+    extraction are reported as ``stale-import`` warnings.
 
     Args:
         path: Path to a graph JSON file produced by ideagraph.
@@ -50,9 +126,8 @@ def doctor_command(
     import json as _json
     from logging import getLogger
 
-    from ideagraph.core.identity import is_global_id, parse_global_id
     from ideagraph.kg.persistence import load_graph
-    from ideagraph.kg.profile import Diagnostic, get_profile
+    from ideagraph.kg.profile import get_profile
     from ideagraph.kg.profiles.research_diagnose import diagnose
 
     logger = getLogger("ideagraph")
@@ -61,41 +136,22 @@ def doctor_command(
         typer.echo(f"No such file: {path}", err=True)
         raise typer.Exit(code=1)
 
-    graph = load_graph(path)
-    known_articles: set[str] | None = None
-    library_gids: set[str] | None = None
-    if library is not None:
-        from ideagraph.library import Library
-
-        with Library(library) as lib:
-            lib.index()
-            known_articles = lib.article_ids()
-            library_gids = lib.statement_gids()
-
     try:
         active_profile = get_profile(profile)
     except KeyError:
         typer.echo(f"Unknown profile: {profile}", err=True)
         raise typer.Exit(code=1) from None
 
+    graph = load_graph(path)
+    known_articles: set[str] | None = None
     diagnostics = active_profile.validate(graph)
-    diagnostics += diagnose(graph, known_articles=known_articles)
 
-    # Library-level: cross target article is known but the node itself is absent.
-    if library_gids is not None and graph.article_id is not None:
-        for edge in graph.edges.values():
-            if not is_global_id(edge.target):
-                continue
-            target_article, _ = parse_global_id(edge.target)
-            if target_article in (known_articles or set()) and edge.target not in library_gids:
-                diagnostics.append(
-                    Diagnostic(
-                        "error",
-                        "xref-dangling-target",
-                        f"cross-reference target {edge.target!r} does not exist in the library",
-                        edge.id,
-                    )
-                )
+    if library is not None:
+        known_articles, library_gids, origins = _library_context(library)
+        diagnostics += diagnose(graph, known_articles=known_articles)
+        diagnostics += _library_diagnostics(graph, known_articles, library_gids, origins)
+    else:
+        diagnostics += diagnose(graph, known_articles=known_articles)
 
     errors = [d for d in diagnostics if d.level == "error"]
     warnings = [d for d in diagnostics if d.level == "warning"]

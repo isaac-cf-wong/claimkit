@@ -9,7 +9,7 @@ for a given domain. Importing this package registers the built-in profiles.
 from __future__ import annotations
 
 from ideagraph.kg.edge import Edge
-from ideagraph.kg.extract import extract_subgraph
+from ideagraph.kg.extract import StaleImport, extract_subgraph, find_stale_imports
 from ideagraph.kg.graph import KnowledgeGraph
 from ideagraph.kg.node import Node
 from ideagraph.kg.profile import (
@@ -34,9 +34,11 @@ __all__ = [
     "Node",
     "NodeRule",
     "Profile",
+    "StaleImport",
     "available_profiles",
     "dumps_prov",
     "extract_subgraph",
+    "find_stale_imports",
     "from_prov",
     "get_profile",
     "loads_prov",
