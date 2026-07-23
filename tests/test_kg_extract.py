@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from ideagraph.kg import Edge, KnowledgeGraph, Node, extract_subgraph
-from ideagraph.kg.extract import SOURCE_GID_KEY, neighbourhood
+from ideagraph.kg import Edge, KnowledgeGraph, Node, extract_subgraph, find_stale_imports
+from ideagraph.kg.extract import SOURCE_GID_KEY, SOURCE_HASH_KEY, neighbourhood
 
 
 def _chain() -> KnowledgeGraph:
@@ -49,10 +49,11 @@ def test_extract_keeps_internal_and_cross_article_edges():
 
 
 def test_extract_stamps_provenance():
-    """Each copied node records its origin global id, once."""
+    """Each copied node records its origin global id and text hash, once."""
     g = _chain()
     sub = extract_subgraph(g, {"a"}, hops=0)
     assert sub.nodes["a"].properties[SOURCE_GID_KEY] == "src#a"
+    assert sub.nodes["a"].properties[SOURCE_HASH_KEY]
 
 
 def test_extract_preserves_existing_provenance():
@@ -80,3 +81,37 @@ def test_extract_is_independent_of_source():
     assert "mutated" not in g.nodes["a"].properties
     assert g.nodes["a"].tags == []
     assert sub.article_id == "dest"
+
+
+def test_stale_import_clean_and_local_edit():
+    """A matching origin is clean; a local edit to the copy is not flagged."""
+    g = _chain()
+    sub = extract_subgraph(g, {"a"}, hops=0)
+    resolve = {"src": g}.get
+    assert find_stale_imports(sub, resolve) == []
+    sub.nodes["a"].text = "locally annotated"  # editing the copy is fine
+    assert find_stale_imports(sub, resolve) == []
+
+
+def test_stale_import_flags_upstream_change():
+    """A change to the origin's text flags the imported copy as changed."""
+    g = _chain()
+    sub = extract_subgraph(g, {"a"}, hops=0)
+    g.nodes["a"].text = "origin corrected"
+    stale = find_stale_imports(sub, {"src": g}.get)
+    assert [(s.node_id, s.reason) for s in stale] == [("a", "changed")]
+
+
+def test_stale_import_flags_missing_origin():
+    """An unresolvable origin flags the imported copy as missing."""
+    g = _chain()
+    sub = extract_subgraph(g, {"a"}, hops=0)
+    stale = find_stale_imports(sub, lambda _aid: None)
+    assert [(s.node_id, s.reason) for s in stale] == [("a", "missing")]
+
+
+def test_stale_import_ignores_unstamped_nodes():
+    """Nodes without a provenance stamp are never reported."""
+    g = KnowledgeGraph(article_id="x")
+    g.add_node(Node(type="claim", id="c", text="local only"))
+    assert find_stale_imports(g, lambda _aid: None) == []

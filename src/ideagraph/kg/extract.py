@@ -11,13 +11,35 @@ still traceable to its origin.
 
 from __future__ import annotations
 
-from ideagraph.core.identity import is_global_id
+from collections.abc import Callable
+from dataclasses import dataclass
+
+from ideagraph.core.identity import is_global_id, parse_global_id
+from ideagraph.core.staleness import compute_digest
 from ideagraph.kg.edge import Edge
 from ideagraph.kg.graph import KnowledgeGraph
 from ideagraph.kg.node import Node
 
 #: Property key under which a copied node records its origin's global id.
 SOURCE_GID_KEY = "source_gid"
+#: Property key under which a copied node records its origin's text digest at
+#: extraction time, so later drift in the origin can be detected.
+SOURCE_HASH_KEY = "source_hash"
+
+#: Resolves an ``article_id`` to its current graph, or ``None`` if unavailable.
+GraphResolver = Callable[[str], "KnowledgeGraph | None"]
+
+
+def _text_digest(text: str) -> str:
+    """Return a stable digest of node text, for import-staleness checks.
+
+    Args:
+        text: The node text.
+
+    Returns:
+        A digest string.
+    """
+    return compute_digest((text or "").encode("utf-8"))
 
 
 def neighbourhood(graph: KnowledgeGraph, seeds: set[str], *, hops: int = 1) -> set[str]:
@@ -87,6 +109,7 @@ def extract_subgraph(
         properties = dict(src.properties)
         if can_stamp and SOURCE_GID_KEY not in properties:
             properties[SOURCE_GID_KEY] = graph.global_id(nid)
+            properties[SOURCE_HASH_KEY] = _text_digest(src.text)
         out.add_node(
             Node(
                 type=src.type,
@@ -113,3 +136,57 @@ def extract_subgraph(
                 )
             )
     return out
+
+
+@dataclass(frozen=True)
+class StaleImport:
+    """A copied node whose origin has drifted since it was extracted.
+
+    Attributes:
+        node_id: The local id of the imported node.
+        source_gid: The origin's global id (``article_id#node_id``).
+        reason: ``"changed"`` (origin text differs from the stamp) or
+            ``"missing"`` (the origin is no longer resolvable).
+    """
+
+    node_id: str
+    source_gid: str
+    reason: str
+
+
+def find_stale_imports(graph: KnowledgeGraph, resolve: GraphResolver) -> list[StaleImport]:
+    """Report imported nodes whose origin has changed or disappeared.
+
+    Only nodes stamped by :func:`extract_subgraph` (carrying both a
+    ``source_gid`` and a ``source_hash``) are checked. Local edits to a copied
+    node do not flag it — the stamp records the *origin's* text at extraction
+    time, so only upstream drift is reported.
+
+    Args:
+        graph: The graph holding imported nodes (e.g. a project graph).
+        resolve: Maps an ``article_id`` to its current graph, or ``None`` if the
+            origin can no longer be found.
+
+    Returns:
+        One :class:`StaleImport` per drifted or missing origin, in node order.
+    """
+    stale: list[StaleImport] = []
+    cache: dict[str, KnowledgeGraph | None] = {}
+    for node in graph.nodes.values():
+        gid = node.properties.get(SOURCE_GID_KEY)
+        stamp = node.properties.get(SOURCE_HASH_KEY)
+        if not gid or stamp is None:
+            continue
+        try:
+            article_id, origin_node_id = parse_global_id(gid)
+        except ValueError:
+            stale.append(StaleImport(node.id, gid, "missing"))
+            continue
+        if article_id not in cache:
+            cache[article_id] = resolve(article_id)
+        origin = cache[article_id]
+        if origin is None or origin_node_id not in origin.nodes:
+            stale.append(StaleImport(node.id, gid, "missing"))
+        elif _text_digest(origin.nodes[origin_node_id].text) != stamp:
+            stale.append(StaleImport(node.id, gid, "changed"))
+    return stale
