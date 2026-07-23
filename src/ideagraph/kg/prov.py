@@ -66,7 +66,7 @@ def _local(qualified_name: str) -> str:
         The bare local identifier.
 
     """
-    return qualified_name[3:] if qualified_name.startswith("ck:") else qualified_name
+    return qualified_name.removeprefix("ck:")
 
 
 def _node_attrs(node: Node) -> dict[str, Any]:
